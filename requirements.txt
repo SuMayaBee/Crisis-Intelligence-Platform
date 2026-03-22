@@ -15,3 +15,5 @@ python-dotenv>=1.0.1
 watchfiles
 pydeck>=0.9.1
 websocket-client>=1.7.0
+lumen[ai]>=1.0.0
+google-genai>=1.0.0

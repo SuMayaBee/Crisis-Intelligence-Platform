@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 import pandas as pd
+import panel as pn
 
 from data.events import _safe_get_json, _safe_get_text
 from data.fallbacks import macro_fallback
@@ -169,6 +170,7 @@ def load_space_sample() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+@pn.cache(ttl=3600)
 def load_commodities_history() -> pd.DataFrame:
     """30-day daily closes for oil, metals, and agriculture — Yahoo Finance (no key)."""
     import math
@@ -278,6 +280,7 @@ def load_currency_rates() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+@pn.cache(ttl=300)
 def load_fx_live(currencies: list[str] | None = None) -> pd.DataFrame:
     """Latest FX rates + 1-day % change — exchangerate.host live + historical."""
     codes   = currencies or _FX_CURRENCIES
@@ -396,6 +399,7 @@ def load_ticker_search(query: str) -> list[str]:
         return []
 
 
+@pn.cache(ttl=3600)
 def load_ohlcv(ticker: str, start_date: str, end_date: str,
                interval: str = "1d") -> pd.DataFrame:
     """OHLCV candlestick data for any ticker — Yahoo Finance (no key needed)."""

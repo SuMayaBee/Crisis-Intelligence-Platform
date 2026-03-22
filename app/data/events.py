@@ -7,11 +7,13 @@ import queue
 import threading
 import time
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import StringIO
 from typing import Any
 
 import numpy as np
 import pandas as pd
+import panel as pn
 import requests
 
 from data.fallbacks import (
@@ -707,16 +709,38 @@ def _try_load(loader_fn, fallback_fn, label: str) -> pd.DataFrame:
     return fallback_fn()
 
 
+@pn.cache(ttl=900)
 def load_events() -> pd.DataFrame:
-    gdelt     = _try_load(_load_gdelt_live,    gdelt_fallback,     "GDELT")
-    firms     = _try_load(_load_firms_live,    firms_fallback,     "FIRMS")
-    opensky   = _try_load(_load_opensky_live,  opensky_fallback,   "OpenSky")
-    noaa      = _try_load(_load_noaa_live,     noaa_fallback,      "NOAA")
-    maritime  = _try_load(_load_ais_live,      maritime_fallback,  "Maritime")
-    rocket    = _try_load(_load_rocket_live,   rocket_fallback,    "Rocket")
-    seismic   = _try_load(_load_seismic_live,  seismic_fallback,   "Seismic")
-    cyber     = _try_load(_load_cyber_live,    cyber_fallback,     "Cyber")
-    radiation = _try_load(_load_radiation_live, radiation_fallback, "Radiation")
+    _TASKS = [
+        ("GDELT",     _load_gdelt_live,     gdelt_fallback),
+        ("FIRMS",     _load_firms_live,     firms_fallback),
+        ("OpenSky",   _load_opensky_live,   opensky_fallback),
+        ("NOAA",      _load_noaa_live,      noaa_fallback),
+        ("Maritime",  _load_ais_live,       maritime_fallback),
+        ("Rocket",    _load_rocket_live,    rocket_fallback),
+        ("Seismic",   _load_seismic_live,   seismic_fallback),
+        ("Cyber",     _load_cyber_live,     cyber_fallback),
+        ("Radiation", _load_radiation_live, radiation_fallback),
+    ]
+
+    results: dict[str, pd.DataFrame] = {}
+    with ThreadPoolExecutor(max_workers=len(_TASKS)) as executor:
+        future_to_label = {
+            executor.submit(_try_load, loader, fallback, label): label
+            for label, loader, fallback in _TASKS
+        }
+        for future in as_completed(future_to_label):
+            results[future_to_label[future]] = future.result()
+
+    gdelt     = results["GDELT"]
+    firms     = results["FIRMS"]
+    opensky   = results["OpenSky"]
+    noaa      = results["NOAA"]
+    maritime  = results["Maritime"]
+    rocket    = results["Rocket"]
+    seismic   = results["Seismic"]
+    cyber     = results["Cyber"]
+    radiation = results["Radiation"]
 
     # FIRMS / OpenSky / NOAA go through the raw normaliser
     normalized = _normalize_events(

@@ -14,7 +14,10 @@ def initialize_runtime() -> None:
     pn.extension(
         "tabulator",
         "deckgl",
+        "filedropper",
+        "vega",
         theme="dark",
         sizing_mode="stretch_width",
+        css_files=["https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"],
     )
     hv.extension("bokeh")
