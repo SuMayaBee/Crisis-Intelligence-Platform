@@ -20,7 +20,7 @@ _BG         = "#0a0f1e"
 _PANEL_BG   = "#0c1524"
 _BORDER     = "#1e3a5f"
 _ACCENT     = "#7dd3fc"
-_PANEL_W    = 270
+_PANEL_W    = 320
 
 _HDR_CSS = (
     "font-size:10px;font-weight:bold;color:{a};"
@@ -236,7 +236,7 @@ def build_dashboard() -> pn.Column:
         },
     )
 
-    from intel_panel import build_commodities_tab, build_currency_tab, build_market_tab  # local import avoids circular load
+    from intel_panel import build_commodities_tab, build_currency_tab  # local import avoids circular load
     from ai_panel import build_ai_tab
 
     map_body = pn.Row(
@@ -249,7 +249,6 @@ def build_dashboard() -> pn.Column:
         ("🗺  Risk Map",    map_body),
         ("📈  Global Prices", build_commodities_tab()),
         ("💱  Currency FX", build_currency_tab()),
-        ("🕯  Market",      build_market_tab()),
         ("🤖  AI Explorer", build_ai_tab()),
         dynamic=True,
         sizing_mode="stretch_both",
