@@ -226,9 +226,9 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
         pn.pane.HoloViews(linked_sev, sizing_mode="stretch_width", margin=0),
         _hdr("Severity by source"),
         pn.pane.HoloViews(src_box, sizing_mode="stretch_width", margin=0),
-        _hdr("Top active regions"),
-        _region_bars,
-        pn.Spacer(),
+        # _hdr("Top active regions"),
+        # _region_bars,
+        # pn.Spacer(),
         sizing_mode="stretch_height",
         styles={
             "background":  _BG,
