@@ -327,6 +327,7 @@ def build_dashboard() -> pn.Column:
 
     from intel_panel import build_commodities_tab, build_currency_tab  # local import avoids circular load
     from ai_panel import build_ai_tab
+    from analysis_panel import build_analysis_tab
 
     map_body = pn.Row(
         state.map_panel,
@@ -335,10 +336,11 @@ def build_dashboard() -> pn.Column:
     )
 
     tabs = pn.Tabs(
-        ("🗺  Risk Map",    map_body),
+        ("🗺  Risk Map",      map_body),
+        ("🔍  Risk Analysis", build_analysis_tab(state.filtered_events())),
         ("📈  Global Prices", build_commodities_tab()),
-        ("💱  Currency FX", build_currency_tab()),
-        ("🤖  AI Explorer", build_ai_tab()),
+        ("💱  Currency FX",   build_currency_tab()),
+        ("🤖  AI Explorer",   build_ai_tab()),
         dynamic=True,
         sizing_mode="stretch_both",
         stylesheets=[_TAB_CSS],
