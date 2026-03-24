@@ -122,6 +122,9 @@ def build_combined_map(df: pd.DataFrame) -> pn.viewable.Viewable:
         yaxis=None,
         active_tools=["wheel_zoom"],
         tools=["wheel_zoom", "pan", "reset"],
+        bgcolor="#0a0f1e",
+        xlim=(-20000000, 20000000),
+        ylim=(-10000000, 15000000),
     )
 
     return pn.pane.HoloViews(plot, sizing_mode="stretch_both", min_height=MIN_HEIGHT)
