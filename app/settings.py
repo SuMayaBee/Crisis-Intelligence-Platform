@@ -15,7 +15,6 @@ def initialize_runtime() -> None:
         "tabulator",
         "deckgl",
         "filedropper",
-        "vega",
         "codeeditor",
         theme="dark",
         sizing_mode="stretch_width",
