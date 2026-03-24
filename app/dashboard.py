@@ -9,11 +9,58 @@ Right panel contains:
 """
 from __future__ import annotations
 
+import math
+import threading
+import urllib.parse
+import urllib.request
+import json
+
 import panel as pn
 
 from data.events import load_events
 from legend import build_severity_legend, SOURCE_SHAPES
 from state import DashboardState
+
+
+# ── Geocoding helpers ─────────────────────────────────────────────────────────
+_DEFAULT_XLIM = (-20000000, 20000000)
+_DEFAULT_YLIM = (-10000000, 15000000)
+
+def _lon_to_mercator_x(lon: float) -> float:
+    return lon * 20037508.34 / 180.0
+
+def _lat_to_mercator_y(lat: float) -> float:
+    lat = max(-89.9, min(89.9, lat))
+    return math.log(math.tan((90 + lat) * math.pi / 360)) / (math.pi / 180) * 20037508.34 / 180.0
+
+def _geocode_country(name: str):
+    """Return (xlim, ylim, geojson_geometry) in Web Mercator for the given country name, or None on failure."""
+    try:
+        q = urllib.parse.urlencode({
+            "q": name, "format": "json", "limit": "1",
+            "featuretype": "country", "polygon_geojson": "1",
+        })
+        url = f"https://nominatim.openstreetmap.org/search?{q}"
+        req = urllib.request.Request(url, headers={"User-Agent": "HoloIntel/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            results = json.loads(resp.read())
+        if not results:
+            return None
+        result  = results[0]
+        bb      = result.get("boundingbox")   # [south, north, west, east]
+        geojson = result.get("geojson")       # GeoJSON geometry dict (Polygon/MultiPolygon)
+        if not bb:
+            return None
+        south, north, west, east = float(bb[0]), float(bb[1]), float(bb[2]), float(bb[3])
+        dlon = (east - west) * 0.15
+        dlat = (north - south) * 0.15
+        x0 = _lon_to_mercator_x(west - dlon)
+        x1 = _lon_to_mercator_x(east + dlon)
+        y0 = _lat_to_mercator_y(south - dlat)
+        y1 = _lat_to_mercator_y(north + dlat)
+        return (x0, x1), (y0, y1), geojson
+    except Exception:
+        return None
 
 # ── Styling ───────────────────────────────────────────────────────────────────
 _BG         = "#0a0f1e"
@@ -196,8 +243,50 @@ def build_dashboard() -> pn.Column:
     for _rcb in _reg_cbs.values():
         _rcb.param.watch(_reg_cb_toggled, "value")
 
+    # ── Country search ────────────────────────────────────────────────────
+    country_input = pn.widgets.TextInput(
+        placeholder="Search country…",
+        sizing_mode="stretch_width",
+        styles={"font-family": "'Courier New', monospace", "font-size": "12px"},
+    )
+    search_status = pn.pane.HTML(
+        "",
+        sizing_mode="stretch_width",
+        styles={"font-size": "10px", "color": "#475569", "font-family": "'Courier New', monospace"},
+    )
+
+    def _on_country_search(event):
+        name = (event.new or "").strip()
+        if not name:
+            state.param.update(
+                map_xlim=_DEFAULT_XLIM,
+                map_ylim=_DEFAULT_YLIM,
+                map_highlight=None,
+            )
+            search_status.object = ""
+            return
+        search_status.object = f'<span style="color:#7dd3fc;">Searching "{name}"…</span>'
+
+        def _fetch():
+            result = _geocode_country(name)
+            if result:
+                xlim, ylim, geojson = result
+                # Batch all three param changes → single map rebuild
+                state.param.update(map_xlim=xlim, map_ylim=ylim, map_highlight=geojson)
+                search_status.object = f'<span style="color:#39ff14;">&#10003; Zoomed to {name}</span>'
+            else:
+                search_status.object = f'<span style="color:#f87171;">&#10007; Country not found</span>'
+
+        threading.Thread(target=_fetch, daemon=True).start()
+
+    country_input.param.watch(_on_country_search, "value")
+
     # ── Right control panel ───────────────────────────────────────────────
     controls = pn.Column(
+        _section("Map Search"),
+        country_input,
+        search_status,
+        _divider(),
         _section("Sources"),
         src_all_cb,
         pn.pane.HTML(

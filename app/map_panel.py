@@ -20,6 +20,8 @@ import pandas as pd
 import panel as pn
 import geoviews as gv
 from bokeh.models import HoverTool
+import cartopy.crs as ccrs
+from shapely.geometry import shape as shapely_shape
 
 from legend import SEVERITY_CMAP, SEV_COLOR, SEV_LABEL, MARKER_MAP
 
@@ -66,7 +68,12 @@ _TOOLTIP = """
 """
 
 
-def build_combined_map(df: pd.DataFrame) -> pn.viewable.Viewable:
+def build_combined_map(
+    df: pd.DataFrame,
+    xlim: tuple = (-20000000, 20000000),
+    ylim: tuple = (-10000000, 15000000),
+    highlight_geojson: dict | None = None,
+) -> pn.viewable.Viewable:
     if df.empty:
         return pn.pane.Markdown(
             "### No events match the current filters\n\n"
@@ -115,6 +122,21 @@ def build_combined_map(df: pd.DataFrame) -> pn.viewable.Viewable:
         )
         plot = plot * pts
 
+    # Country highlight border — rendered on top of event dots
+    if highlight_geojson:
+        try:
+            geom = shapely_shape(highlight_geojson)
+            # Input geometry is in WGS84 (lat/lon); GeoViews reprojects to Web Mercator for the tile map.
+            highlight = gv.Shape(geom, crs=ccrs.PlateCarree()).opts(
+                fill_color="rgba(57,255,20,0.07)",
+                line_color="#39ff14",
+                line_width=2.5,
+                line_dash="solid",
+            )
+            plot = plot * highlight
+        except Exception:
+            pass  # never crash the map over a missing highlight
+
     plot = plot.opts(
         responsive=True,
         min_height=MIN_HEIGHT,
@@ -123,8 +145,8 @@ def build_combined_map(df: pd.DataFrame) -> pn.viewable.Viewable:
         active_tools=["wheel_zoom"],
         tools=["wheel_zoom", "pan", "reset"],
         bgcolor="#0a0f1e",
-        xlim=(-20000000, 20000000),
-        ylim=(-10000000, 15000000),
+        xlim=xlim,
+        ylim=ylim,
     )
 
     return pn.pane.HoloViews(plot, sizing_mode="stretch_both", min_height=MIN_HEIGHT)

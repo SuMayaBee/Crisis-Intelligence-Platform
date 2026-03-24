@@ -14,6 +14,9 @@ class DashboardState(param.Parameterized):
     source_filter = param.ListSelector(default=[], label="Sources")
     min_severity  = param.Integer(default=1, bounds=(1, 5), label="Min Severity")
     region_filter = param.ListSelector(default=[], label="Regions")
+    map_xlim      = param.Tuple(default=(-20000000, 20000000), length=2)
+    map_ylim      = param.Tuple(default=(-10000000, 15000000), length=2)
+    map_highlight = param.Parameter(default=None)  # GeoJSON geometry dict or None
 
     _LOOKBACK_HOURS = 10800  # 450 days — matches ACLED fetch window
 
@@ -43,7 +46,12 @@ class DashboardState(param.Parameterized):
             & (self.events["region"].isin(self.region_filter))
         ].copy()
 
-    @pn.depends("source_filter", "min_severity", "region_filter")
+    @pn.depends("source_filter", "min_severity", "region_filter", "map_xlim", "map_ylim", "map_highlight")
     def map_panel(self) -> pn.viewable.Viewable:
         from map_panel import build_combined_map
-        return build_combined_map(self.filtered_events())
+        return build_combined_map(
+            self.filtered_events(),
+            xlim=self.map_xlim,
+            ylim=self.map_ylim,
+            highlight_geojson=self.map_highlight,
+        )
