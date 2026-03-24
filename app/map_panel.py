@@ -1,21 +1,32 @@
 """
-Combined risk map — four sources on a single CartoDark tile map.
+Combined risk map — multi-source CartoDark tile map with hybrid rendering.
 
 Visual encoding
 ---------------
   SHAPE  = data source
-              ●  circle   — ACLED   (conflict events)
-              ▲  triangle — FIRMS   (fire / thermal)
+              ▲  triangle — FIRMS   (fire / thermal) — Datashader density raster
+              ●  circle   — GDELT   (conflict events)
               ◆  diamond  — OpenSky (aviation)
               ■  square   — NOAA    (weather alerts)
+              ▼  inv-tri  — Maritime (AIS vessels)
+              ★  star     — Rocket  (alerts)
+              ⬡  hex      — Seismic (earthquakes)
+              ✚  cross    — Cyber   (threats)
   COLOR  = severity level
               gray → blue → yellow → orange → red  (1 → 5)
   SIZE   = uniform (all dots the same size)
+
+Rendering strategy
+------------------
+  FIRMS uses Datashader server-side rasterization (can be 10k–80k points/day).
+  All other sources use regular GeoViews Points with per-point hover tooltips.
 
 Hover popup shows: source, category, title, region, severity, time.
 """
 from __future__ import annotations
 
+import datashader as ds
+import holoviews.operation.datashader as hd
 import pandas as pd
 import panel as pn
 import geoviews as gv
@@ -27,6 +38,9 @@ from legend import SEVERITY_CMAP, SEV_COLOR, SEV_LABEL, MARKER_MAP
 
 MIN_HEIGHT = 800
 DOT_SIZE   = 7   # uniform size — visual weight via color only
+
+# FIRMS fire-severity palette used by the Datashader layer (low → high density)
+_FIRMS_CMAP = ["#7c2d12", "#f97316", "#fbbf24", "#fef08a"]
 
 # Bokeh markers that have NO fill area — rendered purely with stroke lines.
 # These need line_color set to be visible; fill_color has no effect on them.
@@ -93,11 +107,47 @@ def build_combined_map(
     VDIMS = ["sev_str", "severity", "source", "category",
              "title", "region", "ts_str", "sev_color", "sev_label"]
 
-    # Build one Points layer per source so each gets its own marker shape.
-    # All layers share the same color encoding (severity) and tooltip template.
     plot = gv.tile_sources.CartoDark
 
+    # ── FIRMS: Datashader rasterization ──────────────────────────────────────
+    # FIRMS can produce 10k–80k points/day globally (satellite fire detections).
+    # Individual hover tooltips are not meaningful at that density, so we
+    # rasterize on the server and shade as a density heatmap instead.
+    firms_df = df[df["source"] == "FIRMS"]
+    if not firms_df.empty:
+        firms_pts = gv.Points(
+            firms_df[["lon", "lat", "severity"]],
+            kdims=["lon", "lat"],
+            vdims=["severity"],
+        )
+        # rasterize aggregates into a pixel grid; dynspread expands isolated
+        # pixels so sparse areas remain visible at all zoom levels.
+        firms_raster = hd.rasterize(
+            firms_pts,
+            aggregator=ds.mean("severity"),
+            dynamic=True,
+        )
+        firms_spread = hd.dynspread(
+            firms_raster,
+            threshold=0.4,
+            max_px=4,
+        )
+        firms_shaded = hd.shade(
+            firms_spread,
+            cmap=_FIRMS_CMAP,
+            alpha=200,
+        ).opts(
+            show_legend=False,
+            tools=["wheel_zoom", "pan", "reset"],
+        )
+        plot = plot * firms_shaded
+
+    # ── All other sources: regular GeoViews Points with per-point hover ───────
+    # These sources produce small enough row counts that Bokeh can render them
+    # individually, preserving rich hover tooltips for each event.
     for source, marker_shape in MARKER_MAP.items():
+        if source == "FIRMS":
+            continue  # already handled above with Datashader
         sdf = df[df["source"] == source]
         if sdf.empty:
             continue
