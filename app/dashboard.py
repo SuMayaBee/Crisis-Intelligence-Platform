@@ -99,7 +99,6 @@ def build_dashboard() -> pn.Column:
         "Rocket":    ("#f43f5e", "22px"),  # rose   — alerts are critical
         "Seismic":   ("#a78bfa", "18px"),  # violet — earthquakes
         "Cyber":     ("#34d399", "18px"),  # emerald — cyber
-        "Radiation": ("#84cc16", "18px"),  # lime   — radiation
     }
 
     # Checkbox widgets with blank name — label rendered as HTML beside them
@@ -248,7 +247,7 @@ def build_dashboard() -> pn.Column:
 
     tabs = pn.Tabs(
         ("🗺  Risk Map",    map_body),
-        ("📈  Commodities", build_commodities_tab()),
+        ("📈  Global Prices", build_commodities_tab()),
         ("💱  Currency FX", build_currency_tab()),
         ("🕯  Market",      build_market_tab()),
         ("🤖  AI Explorer", build_ai_tab()),

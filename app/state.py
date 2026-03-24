@@ -7,7 +7,7 @@ import param
 
 # All sources the map can show (order matters for legend)
 ALL_SOURCES = ["GDELT", "FIRMS", "OpenSky", "NOAA",
-               "Maritime", "Rocket", "Seismic", "Cyber", "Radiation"]
+               "Maritime", "Rocket", "Seismic", "Cyber"]
 
 
 class DashboardState(param.Parameterized):

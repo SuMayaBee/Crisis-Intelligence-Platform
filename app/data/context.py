@@ -175,14 +175,14 @@ def load_commodities_history() -> pd.DataFrame:
     """30-day daily closes for oil, metals, and agriculture — Yahoo Finance (no key)."""
     import math
     symbols = {
-        "WTI":      "CL=F",
-        "Brent":    "BZ=F",
-        "Nat Gas":  "NG=F",
-        "Gold":     "GC=F",
-        "Silver":   "SI=F",
-        "Palladium":"PA=F",
-        "Wheat":    "ZW=F",
-        "Copper":   "HG=F",
+        "Gold":             "GC=F",
+        "Global Oil Price": "BZ=F",
+        "US Oil Price":     "CL=F",
+        "Natural Gas":      "NG=F",
+        "Wheat":            "ZW=F",
+        "Copper":           "HG=F",
+        "Silver":           "SI=F",
+        "Palladium":        "PA=F",
     }
     rows: list[dict[str, Any]] = []
     def _fetch(sym: str, range_: str, interval: str) -> list[tuple]:
@@ -213,7 +213,7 @@ def load_commodities_history() -> pd.DataFrame:
 
     if not rows:
         base = {
-            "WTI": 76.0, "Brent": 80.5, "Nat Gas": 2.1,
+            "US Oil Price": 76.0, "Global Oil Price": 80.5, "Natural Gas": 2.1,
             "Gold": 2300.0, "Silver": 27.0, "Palladium": 1020.0,
             "Wheat": 550.0, "Copper": 4.20,
         }

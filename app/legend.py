@@ -42,7 +42,6 @@ SOURCE_SHAPES: dict[str, tuple[str, str, str]] = {
     "Rocket":     ("★",  "Rocket",     "Israel Home Front Command alerts"),
     "Seismic":    ("⬡",  "Earthquake", "USGS M≥2.5 earthquakes (7-day)"),
     "Cyber":      ("✚",  "Cyber",      "AlienVault OTX threat intelligence"),
-    "Radiation":  ("✳",  "Radiation",  "Safecast nuclear site monitoring"),
 }
 
 # Bokeh marker names matched to each source
@@ -55,7 +54,6 @@ MARKER_MAP: dict[str, str] = {
     "Rocket":    "star",
     "Seismic":   "hex",
     "Cyber":     "cross",
-    "Radiation": "asterisk",
 }
 
 
