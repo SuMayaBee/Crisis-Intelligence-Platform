@@ -49,3 +49,6 @@ desktop.ini
 # ── Project-specific ──────────────────────────────────────────────────────────
 REMOVED_FEATURES.md
 *.log
+
+# ── HuggingFace Space (local clone, not for GitHub) ───────────────────────────
+hf-space/

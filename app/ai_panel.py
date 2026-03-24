@@ -230,6 +230,13 @@ def _make_chart(df: pd.DataFrame, spec: dict) -> pn.viewable.Viewable:
     if kind == "map" or ({"lat", "lon"}.issubset(df.columns) and kind in ("scatter", "points", "map")):
         return _make_geo_map(df, spec)
 
+    # Coerce column types to avoid int/str comparison errors in hvPlot
+    df = df.copy()
+    if x and x in df.columns and kind in ("bar", "barh"):
+        df[x] = df[x].astype(str)
+    if y and y in df.columns:
+        df[y] = pd.to_numeric(df[y], errors="coerce")
+
     kwargs: dict = {**_PLOT_KW, "title": title}
     if x:               kwargs["x"]  = x
     if y:               kwargs["y"]  = y
