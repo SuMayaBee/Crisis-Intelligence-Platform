@@ -80,13 +80,13 @@ _HINT_CSS = "font-size:10px;color:#475569;margin-top:4px;line-height:1.4;"
 _TAB_CSS = """
 :host .bk-header { background: #0a0f1e; border-bottom: 1px solid #1e3a5f; }
 :host .bk-tab {
-    background: #0a0f1e; color: #475569;
+    background: #0a0f1e; color: #94a3b8;
     border: none; border-bottom: 2px solid transparent;
-    font-family: 'Courier New', monospace; font-size: 10px;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    padding: 9px 18px;
+    font-family: 'Courier New', monospace; font-size: 13px;
+    font-weight: bold; letter-spacing: 1px; text-transform: uppercase;
+    padding: 10px 20px;
 }
-:host .bk-tab:hover  { color: #94a3b8; }
+:host .bk-tab:hover  { color: #cbd5e1; }
 :host .bk-tab.bk-active { color: #7dd3fc; border-bottom: 2px solid #7dd3fc; }
 """
 
@@ -124,7 +124,7 @@ def build_dashboard() -> pn.Column:
                     border-bottom:1px solid {_BORDER};display:flex;align-items:center;">
           <span style="color:#e2e8f0;font-size:17px;font-weight:bold;
                        font-family:sans-serif;letter-spacing:0.5px;">
-            HoloIntel &mdash; Global Risk Map
+            Crisis-Intelligence-Platform
           </span>
         </div>
         """,
