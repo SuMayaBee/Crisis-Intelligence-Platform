@@ -6,21 +6,58 @@ A real-time global risk intelligence dashboard built entirely with the **HoloViz
 
 ---
 
-## What is HoloViz?
+## Tabs
 
-HoloViz is a coordinated set of Python libraries built and maintained by **Anaconda** for data visualization and interactive apps. Each library has a specific role:
+### 🗺 Risk Map
 
-| Library | Role |
-|---|---|
-| **Panel** | Builds and serves the full web app — layout, widgets, tabs, ChatInterface |
-| **HoloViews** | Chart abstraction and cross-filtering (`link_selections`, `hv.Points`, `hv.BoxWhisker`) |
-| **hvPlot** | One-liner interactive charts directly from pandas DataFrames |
-| **GeoViews** | Geographic plots — `gv.Points` on map tiles with coordinate projection |
-| **Datashader** | Rasterizes tens of thousands of event points into smooth density layers |
-| **Param** | Reactive parameters — powers the `DashboardState` that wires everything together |
-| **Bokeh** | Rendering backend — turns all of the above into interactive browser charts |
+Live global event map built with **GeoViews** on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. **Datashader** rasterizes high-density point clouds server-side for smooth performance. Sidebar filters (source, region, severity) powered by **Param**.
 
-The entire platform — map, charts, AI chat, cross-filtering — is 100% Python with the HoloViz stack.
+<!-- add screenshot -->
+
+### 📰 News & Events
+
+Cross-filtering via `hv.link_selections` (**HoloViews**). Draw a box on the map → severity histogram, box plot, and stats all update instantly. The news feed fetches live Google News RSS headlines for the selected region automatically.
+
+<!-- add screenshot -->
+
+### 📈 Global Prices
+
+Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finance rendered with **hvPlot**. Date range picker updates charts reactively via `pn.bind`.
+
+<!-- add screenshot -->
+
+### 💱 Currency FX
+
+1-day % change of currencies vs USD by region. Green = weakened against dollar, red = strengthened. Built with **hvPlot** + **Param**. Useful for tracking real-time economic impact of conflicts.
+
+<!-- add screenshot -->
+
+### 🤖 AI Explorer
+
+**Panel ChatInterface** + **Gemini** + **DuckDB**. Ask questions in natural language — the AI runs SQL, fetches live stock data from Yahoo Finance, or searches the web, then renders an **hvPlot** or **GeoViews** chart directly in the chat.
+
+Example questions:
+
+- *"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
+- *"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
+- *"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
+- *"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
+
+<!-- add screenshots -->
+
+---
+
+## HoloViz Ecosystem Usage
+
+| Library | Role in this project |
+| --- | --- |
+| **Panel** | App shell, tabs, sidebar, ChatInterface, reactive bindings |
+| **HoloViews** | `link_selections` cross-filtering, BoxWhisker, Histogram |
+| **hvPlot** | Commodity line charts, FX bar charts, stock plots |
+| **GeoViews** | Interactive world map on CartoDark tiles (Mercator projection) |
+| **Datashader** | Server-side rasterization of high-density point clouds on the risk map |
+| **Param** | `DashboardState` — central reactive state, `param.watch`, `pn.bind` |
+| **Bokeh** | Rendering backend for all charts |
 
 ---
 
@@ -40,42 +77,6 @@ All data in this platform is sourced from **free, open APIs** — no paywalls, n
 | **ExchangeRate.host** | Live FX rates vs USD | Free key at exchangerate.host |
 | **Google News RSS** | Regional news feed | Free, no key required |
 | **Gemini (Google AI)** | AI Explorer LLM | Free key at aistudio.google.com |
-
----
-
-## Tabs
-
-### 🗺 Risk Map
-Live global event map built with **GeoViews** on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. **Datashader** rasterizes high-density point clouds server-side for smooth performance. Sidebar filters (source, region, severity) powered by **Param**.
-
-<!-- add screenshot -->
-
-### 📰 News & Events
-Cross-filtering via `hv.link_selections` (**HoloViews**). Draw a box on the map → severity histogram, box plot, and stats all update instantly. The news feed fetches live Google News RSS headlines for the selected region automatically.
-
-<!-- add screenshot -->
-
-### 📈 Global Prices
-Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finance rendered with **hvPlot**. Date range picker updates charts reactively via `pn.bind`.
-
-<!-- add screenshot -->
-
-### 💱 Currency FX
-1-day % change of currencies vs USD by region. Green = weakened against dollar, red = strengthened. Built with **hvPlot** + **Param**. Useful for tracking real-time economic impact of conflicts.
-
-<!-- add screenshot -->
-
-### 🤖 AI Explorer
-**Panel ChatInterface** + **Gemini** + **DuckDB**. Ask questions in natural language — the AI runs SQL, fetches live stock data from Yahoo Finance, or searches the web, then renders an **hvPlot** or **GeoViews** chart directly in the chat.
-
-Example questions:
-
-- *"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
-- *"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
-- *"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
-- *"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
-
-<!-- add screenshots -->
 
 ---
 
@@ -133,6 +134,11 @@ FIRMS_MAP_KEY=your_key
 GEMINI_API_KEY=your_key
 EXCHANGERATE_HOST_KEY=your_key
 AISSTREAM_API_KEY=your_key
+OTX_API_KEY=your_key
+
+# Optional — enables EIA energy prices and FRED financial indicators
+EIA_API_KEY=your_key
+FRED_API_KEY=your_key
 ```
 
 Run the app:
@@ -147,7 +153,7 @@ Open: http://localhost:5007/app
 
 ## Project Structure
 
-```
+```text
 holoviz-risk-platform/
 ├── app/
 │   ├── app.py              # Entry point
@@ -163,19 +169,6 @@ holoviz-risk-platform/
 │       └── context.py      # Commodities, FX, market data loaders
 ├── requirements.txt
 └── README.md
-```
-
----
-
-## Tech Stack
-
-```
-pandas DataFrame
-    → hvPlot / HoloViews   (charts and cross-filtering)
-    → GeoViews             (geographic layers)
-    → Datashader           (high-density point rasterization)
-    → Panel                (layout, widgets, serving)
-    → Bokeh                (browser rendering)
 ```
 
 ---

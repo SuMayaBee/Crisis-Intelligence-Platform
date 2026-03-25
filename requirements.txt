@@ -18,3 +18,5 @@ websocket-client>=1.7.0
 lumen[ai]>=1.0.0
 google-genai>=1.0.0
 duckdb>=0.10.0
+pytest>=8.0.0
+pytest-mock>=3.14.0
