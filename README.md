@@ -6,12 +6,7 @@ A real-time global risk intelligence dashboard built entirely with the **HoloViz
 
 ## Motivation
 
-We're living in a moment where a lot is happening at once — the Iran-Israel conflict, oil prices spiking every time something shifts in the Middle East, people genuinely talking about World War 3, currencies crashing overnight when sanctions hit. All this information exists, but it's scattered across a dozen different tools, news sources, and paywalled platforms.
-
-As someone who works with data and contributes to the HoloViz ecosystem, I kept thinking — what if you could bring it all into one place, built entirely in Python? A platform where you can see live conflict events, fire hotspots, earthquakes, and weather alerts on one map, drill into any region and get live news and severity breakdowns, track how currencies and commodity prices react to geopolitical events in real time, and ask an AI questions like *"how is the Iran-Israel conflict affecting oil prices?"* — all in one app, all free, all open.
-
-That's what this is. It's also a demonstration of how far the HoloViz stack can go on a real-world, data-heavy application — without ever leaving Python.
-
+The Iran-Israel conflict, oil prices spiking, currencies crashing overnight — all this information exists but it's scattered across a dozen tools and paywalled platforms. I wanted to bring it all into one place, built entirely in Python with the HoloViz stack, using only free APIs. This is that platform — and a demonstration of how far HoloViz can go on a real-world, data-heavy application.
 ---
 
 ## What is HoloViz?
