@@ -66,8 +66,8 @@ def build_source_legend() -> pn.pane.HTML:
                        margin-right:10px;margin-top:1px;">{glyph}</span>
           <div>
             <span style="font-size:12px;font-weight:bold;color:#e2e8f0;">{src}</span>
-            <span style="font-size:11px;color:#475569;"> — {short}</span><br>
-            <span style="font-size:10px;color:#334155;">{desc}</span>
+            <span style="font-size:11px;color:#94a3b8;"> — {short}</span><br>
+            <span style="font-size:10px;color:#64748b;">{desc}</span>
           </div>
         </div>"""
         for src, (glyph, short, desc) in SOURCE_SHAPES.items()
@@ -80,10 +80,10 @@ def build_severity_legend() -> pn.pane.HTML:
     items = list(SEVERITY_CMAP.items())
     cells = "".join(
         f"""<div style="display:flex;align-items:center;margin-bottom:5px;">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;
+          <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
                        background:{color};flex-shrink:0;
-                       box-shadow:0 0 4px {color}88;"></span>
-          <span style="margin-left:7px;font-size:11px;color:#cbd5e1;">
+                       box-shadow:0 0 5px {color}aa;"></span>
+          <span style="margin-left:8px;font-size:13px;color:#e2e8f0;">
             <b style="color:{color};">{k}</b>&nbsp;{SEV_LABEL[int(k)]}
           </span>
         </div>"""

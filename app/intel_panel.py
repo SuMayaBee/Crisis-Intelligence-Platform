@@ -24,7 +24,7 @@ _ACCENT = "#7dd3fc"
 _MUTED  = "#475569"
 
 _HDR_CSS = (
-    "font-size:10px;font-weight:bold;color:{a};"
+    "font-size:13px;font-weight:bold;color:{a};"
     "letter-spacing:2px;text-transform:uppercase;"
     "font-family:'Courier New',monospace;padding:16px 16px 10px;"
 ).format(a=_ACCENT)
@@ -40,7 +40,7 @@ _COMMODITY_COLORS = [
     "#94a3b8", "#c084fc",               # Silver / Palladium
 ]
 
-_PLOT_KW = dict(responsive=True, height=520, grid=True, fontscale=0.9)
+_PLOT_KW = dict(responsive=True, height=520, grid=True, fontscale=1.2)
 
 
 def _no_data(msg: str) -> pn.pane.HTML:

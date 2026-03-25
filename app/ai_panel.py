@@ -120,6 +120,7 @@ When the user asks a question:
        - "y": column for y-axis (string or list)
        - "by": column to color-group by (optional)
        - "title": chart title
+       - "filter": dict | null — row filter applied before charting, e.g. {{"commodity": "Gold"}}
    - "show_table": bool — whether to show raw data table
 
 Rules:
@@ -130,6 +131,7 @@ Rules:
 - "by" only when grouping adds value.
 - For tickers: default line chart with x="date", y="close", by="symbol" if multiple.
 - Use "search" for news, policy, sanctions, geopolitical updates.
+- IMPORTANT: When comparing commodities or assets with very different price scales (e.g. Gold ~$2000 vs Oil ~$70), return SEPARATE chart specs for each — one chart per commodity — so each renders with its own y-axis scale. Never combine them into a single chart with "by", as the smaller-scale asset becomes invisible. Use the "filter" field on each chart spec to slice the data, e.g. {{"commodity": "Gold"}} and {{"commodity": "Global Oil Price"}}.
 - Respond ONLY with the JSON object, nothing else.
 """
 
@@ -215,7 +217,7 @@ def _make_geo_map(df: pd.DataFrame, spec: dict) -> pn.viewable.Viewable:
         "tiles  = gv.tile_sources.CartoDark()\n"
         "map_   = (tiles * points).opts(projection=crs.GOOGLE_MERCATOR)"
     )
-    return _wrap_with_code(pn.pane.HoloViews(chart, sizing_mode="stretch_both", min_height=420), code)
+    return _wrap_with_code(pn.pane.HoloViews(chart, sizing_mode="stretch_width", height=420, linked_axes=False), code)
 
 
 def _make_chart(df: pd.DataFrame, spec: dict) -> pn.viewable.Viewable:
@@ -226,7 +228,15 @@ def _make_chart(df: pd.DataFrame, spec: dict) -> pn.viewable.Viewable:
     y     = spec.get("y")
     by    = spec.get("by")
 
-    # Route geographic data to GeoViews
+    # Apply row filter before plotting (e.g. {"commodity": "Gold"})
+    row_filter = spec.get("filter")
+    if row_filter and isinstance(row_filter, dict):
+        df = df.copy()
+        for col, val in row_filter.items():
+            if col in df.columns:
+                df = df[df[col] == val]
+
+    # Route geographic data to GeoViews (pass already-filtered df)
     if kind == "map" or ({"lat", "lon"}.issubset(df.columns) and kind in ("scatter", "points", "map")):
         return _make_geo_map(df, spec)
 
@@ -246,21 +256,73 @@ def _make_chart(df: pd.DataFrame, spec: dict) -> pn.viewable.Viewable:
     plot_fn = getattr(df.hvplot, kind, df.hvplot.line)
     chart   = plot_fn(**kwargs)
     code    = _hvplot_code("df", kind, kwargs)
-    return _wrap_with_code(pn.pane.HoloViews(chart, sizing_mode="stretch_both", min_height=400), code)
+    return _wrap_with_code(pn.pane.HoloViews(chart, sizing_mode="stretch_width", height=400, linked_axes=False), code)
+
+
+_TOGGLE_CSS = """
+:host .bk-btn {
+    background: transparent !important;
+    border: 1px solid #1e3a5f !important;
+    color: #475569 !important;
+    font-size: 10px !important;
+    font-family: 'Courier New', monospace !important;
+    letter-spacing: 1px !important;
+    border-radius: 3px !important;
+    padding: 2px 10px !important;
+    transition: color 0.15s, border-color 0.15s;
+}
+:host .bk-btn:hover {
+    color: #7dd3fc !important;
+    border-color: #7dd3fc88 !important;
+}
+:host .bk-btn.bk-active {
+    color: #7dd3fc !important;
+    border-color: #7dd3fc !important;
+    background: #1e3a5f33 !important;
+}
+"""
+
+_CODE_PANE_CSS = """
+:host {
+    background: #0d1b2a !important;
+    border-radius: 6px !important;
+    border: 1px solid #1e3a5f !important;
+    padding: 2px 6px !important;
+}
+"""
 
 
 def _wrap_with_code(chart_pane: pn.viewable.Viewable, code: str) -> pn.viewable.Viewable:
-    """Wrap a chart with a collapsible HoloViz code block beneath it."""
-    code_block = pn.pane.Markdown(
-        f"```python\n{code}\n```",
+    """Wrap a chart with a small right-aligned toggle that reveals a code block."""
+    toggle = pn.widgets.Toggle(
+        name="</> code",
+        value=False,
+        button_type="light",
+        width=72,
+        height=24,
+        stylesheets=[_TOGGLE_CSS],
+    )
+
+    code_md = f"```python\n{code}\n```"
+
+    # pn.depends swaps the whole element in/out of the DOM — reliable show/hide
+    @pn.depends(toggle.param.value)
+    def _code_block(show):
+        if not show:
+            return pn.pane.HTML("", width=0, height=0, margin=0)
+        return pn.pane.Markdown(
+            code_md,
+            sizing_mode="stretch_width",
+            margin=(0, 0, 6, 0),
+            stylesheets=[_CODE_PANE_CSS],
+        )
+
+    return pn.Column(
+        chart_pane,
+        pn.Row(pn.Spacer(), toggle, margin=(4, 0, 2, 0)),
+        _code_block,
         sizing_mode="stretch_width",
     )
-    accordion = pn.Accordion(
-        ("📋 View HoloViz Code", code_block),
-        sizing_mode="stretch_width",
-        styles={"border": f"1px solid {_BORDER}", "border-radius": "4px"},
-    )
-    return pn.Column(chart_pane, accordion, sizing_mode="stretch_both")
 
 
 def _make_multi_chart(df: pd.DataFrame, specs: list[dict]) -> pn.viewable.Viewable:
@@ -275,7 +337,7 @@ def _make_multi_chart(df: pd.DataFrame, specs: list[dict]) -> pn.viewable.Viewab
         return pn.pane.Markdown("*Could not render charts.*")
     if len(panels) == 1:
         return panels[0]
-    return pn.GridBox(*panels, ncols=2, sizing_mode="stretch_both")
+    return pn.GridBox(*panels, ncols=2, sizing_mode="stretch_width")
 
 
 def _make_table(df: pd.DataFrame) -> pn.widgets.Tabulator:
@@ -297,18 +359,52 @@ def _make_table(df: pd.DataFrame) -> pn.widgets.Tabulator:
 _history: list[dict] = []
 
 
+_LOADING_HTML = """
+<div style="display:flex;align-items:center;gap:10px;padding:6px 2px;">
+  <div style="display:flex;gap:4px;align-items:center;">
+    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;
+                 background:#7dd3fc;animation:ai-dot 1.2s ease-in-out infinite 0s;"></span>
+    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;
+                 background:#7dd3fc;animation:ai-dot 1.2s ease-in-out infinite 0.2s;"></span>
+    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;
+                 background:#7dd3fc;animation:ai-dot 1.2s ease-in-out infinite 0.4s;"></span>
+  </div>
+  <span style="color:#475569;font-size:12px;font-family:'Courier New',monospace;
+               letter-spacing:1px;">Analyzing…</span>
+</div>
+<style>
+@keyframes ai-dot {
+  0%, 80%, 100% { opacity: 0.15; transform: scale(0.7); }
+  40%            { opacity: 1;    transform: scale(1.15); }
+}
+</style>
+"""
+
+
 async def _chat_callback(contents: str, user: str, instance: pn.chat.ChatInterface):
     con = _init_db()
     _history.append({"role": "user", "text": contents})
 
+    # Show animated loading dots immediately while the LLM call is in flight.
+    # _ask_llm is synchronous, so we run it in a thread executor to avoid
+    # blocking the event loop (which would prevent the UI from rendering the dots).
+    loading = pn.pane.HTML(_LOADING_HTML, sizing_mode="stretch_width")
+    yield loading
+    await asyncio.sleep(0)  # flush UI update to client before blocking call
+
+    loop = asyncio.get_event_loop()
     try:
-        result = _ask_llm(contents, _history)
+        result = await loop.run_in_executor(None, lambda: _ask_llm(contents, _history))
     except json.JSONDecodeError:
+        loading.object = ""
         yield "I had trouble parsing the response. Could you rephrase your question?"
         return
     except Exception as e:
+        loading.object = ""
         yield f"**Error contacting AI:** {e}"
         return
+
+    loading.object = ""  # clear spinner — content follows
 
     answer      = result.get("answer", "")
     sql         = result.get("sql")
@@ -408,7 +504,7 @@ _SUGGESTIONS = [
     "Show the top 10 most recent critical events",
     "Plot Apple vs Microsoft",
     "What's the latest news on oil prices?",
-    "Which market is up the most today?",
+    "Show earthquake events on a map",
 ]
 
 
@@ -419,7 +515,7 @@ def _build_sidebar() -> pn.Column:
 
     def _label(text: str) -> pn.pane.HTML:
         return pn.pane.HTML(
-            f'<div style="font-size:10px;font-weight:bold;color:{_ACCENT};'
+            f'<div style="font-size:13px;font-weight:bold;color:{_ACCENT};'
             f'letter-spacing:2px;text-transform:uppercase;'
             f'font-family:\'Courier New\',monospace;margin-bottom:4px;">{text}</div>',
             sizing_mode="stretch_width",
@@ -427,7 +523,7 @@ def _build_sidebar() -> pn.Column:
 
     def _hint(text: str) -> pn.pane.HTML:
         return pn.pane.HTML(
-            f'<div style="font-size:10px;color:{_MUTED};line-height:1.5;margin-top:4px;">{text}</div>',
+            f'<div style="font-size:12px;color:{_MUTED};line-height:1.5;margin-top:4px;">{text}</div>',
             sizing_mode="stretch_width",
         )
 
@@ -473,28 +569,6 @@ def _build_sidebar() -> pn.Column:
 
     model_select.param.watch(_on_model, "value")
 
-    capabilities = pn.pane.HTML(
-        f"""
-        <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
-          <b style="color:{_ACCENT};">Data sources:</b><br>
-          • Risk events (ACLED, FIRMS…)<br>
-          • Commodities history<br>
-          • Currency FX rates<br>
-          • Market prices<br>
-          • Live stocks via Yahoo Finance<br>
-          • Web search via Google<br><br>
-          <b style="color:{_ACCENT};">Chart types:</b><br>
-          • Line, bar, scatter, area<br>
-          • GeoViews maps (lat/lon data)<br>
-          • Multi-chart grid layouts<br><br>
-          <b style="color:{_ACCENT};">HoloViz code:</b><br>
-          Every chart shows the code<br>
-          that generated it.
-        </div>
-        """,
-        sizing_mode="stretch_width",
-    )
-
     get_key_link = pn.pane.HTML(
         f'<a href="https://aistudio.google.com/apikey" target="_blank" '
         f'style="font-size:10px;color:{_ACCENT};text-decoration:none;">'
@@ -511,8 +585,6 @@ def _build_sidebar() -> pn.Column:
         _label("Model"),
         model_select,
         _divider(),
-        _label("Capabilities"),
-        capabilities,
         pn.Spacer(),
         width=220,
         sizing_mode="stretch_height",
@@ -531,24 +603,26 @@ def build_ai_tab() -> pn.viewable.Viewable:
 
     chat = pn.chat.ChatInterface(
         callback=_chat_callback,
-        callback_user="HoloIntel AI",
+        callback_user="Crisis AI",
         show_rerun=False,
         show_undo=True,
         show_clear=True,
-        placeholder_text="Ask about risk events, commodities, stocks, or world news...",
+        placeholder_text="Ask anything about risk events, commodities, news...",
         sizing_mode="stretch_both",
         min_height=600,
         callback_exception="verbose",
+        stylesheets=["""
+            :host { background: #0a0f1e; }
+            .chat-interface { background: #0a0f1e; }
+            .message { font-size: 14px; line-height: 1.6; }
+            .chat-entry { overflow: hidden; }
+            .chat-feed-entry { overflow: hidden; contain: layout; }
+        """],
     )
 
     chat.send(
-        pn.pane.Markdown(
-            "**Welcome to HoloIntel AI**\n\n"
-            "I can query risk events, commodities, currencies, live stocks, and search the web. "
-            "Charts include the HoloViz code that generated them.\n\n"
-            + "\n".join(f"- *{s}*" for s in _SUGGESTIONS),
-        ),
-        user="HoloIntel AI",
+        "Hello! I'm your Crisis Intelligence AI. Ask me about risk events, commodities, currencies, stocks, or world news.",
+        user="Crisis AI",
         respond=False,
     )
 

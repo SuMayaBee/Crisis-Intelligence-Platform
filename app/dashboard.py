@@ -70,15 +70,25 @@ _ACCENT     = "#7dd3fc"
 _PANEL_W    = 320
 
 _HDR_CSS = (
-    "font-size:10px;font-weight:bold;color:{a};"
+    "font-size:12px;font-weight:bold;color:{a};"
     "letter-spacing:2px;text-transform:uppercase;"
     "margin-bottom:8px;font-family:'Courier New',monospace;"
 ).format(a=_ACCENT)
 
-_HINT_CSS = "font-size:10px;color:#475569;margin-top:4px;line-height:1.4;"
+_HINT_CSS = "font-size:12px;color:#7a8fa6;margin-top:4px;line-height:1.4;"
 
 _TAB_CSS = """
-:host .bk-header { background: #0a0f1e; border-bottom: 1px solid #1e3a5f; }
+:host .bk-header {
+    background: #0a0f1e;
+    border-bottom: 1px solid #1e3a5f;
+    display: flex;
+    justify-content: center;
+}
+:host .bk-header .bk-btn-group {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
 :host .bk-tab {
     background: #0a0f1e; color: #94a3b8;
     border: none; border-bottom: 2px solid transparent;
@@ -121,10 +131,13 @@ def build_dashboard() -> pn.Column:
     header = pn.pane.HTML(
         f"""
         <div style="background:{_BG};padding:13px 20px;
-                    border-bottom:1px solid {_BORDER};display:flex;align-items:center;">
-          <span style="color:#e2e8f0;font-size:17px;font-weight:bold;
-                       font-family:sans-serif;letter-spacing:0.5px;">
-            Crisis-Intelligence-Platform
+                    border-bottom:3px solid {_ACCENT};
+                    box-shadow:0 3px 10px {_ACCENT}66;
+                    display:flex;align-items:center;justify-content:center;">
+          <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+          <span style="color:#e2e8f0;font-size:22px;font-weight:700;
+                       font-family:'Orbitron',sans-serif;letter-spacing:3px;">
+            Crisis Intelligence Platform
           </span>
         </div>
         """,
@@ -140,10 +153,10 @@ def build_dashboard() -> pn.Column:
     _SRC_ICON_STYLE = {
         "GDELT":     ("#ef4444", "22px"),  # red    — conflict
         "FIRMS":     ("#f97316", "18px"),  # orange — fire
-        "OpenSky":   ("#38bdf8", "18px"),  # blue   — aviation
-        "NOAA":      ("#22d3ee", "18px"),  # teal   — weather
-        "Maritime":  ("#0ea5e9", "18px"),  # sky    — ships
-        "Rocket":    ("#f43f5e", "22px"),  # rose   — alerts are critical
+        "NOAA":      ("#fbbf24", "18px"),  # yellow — weather
+        "OpenSky":   ("#38bdf8", "18px"),  # blue   — flight tracking
+        "Maritime":  ("#10b981", "18px"),  # green  — ships
+        "Rocket":    ("#f43f5e", "22px"),  # rose   — rocket alerts
         "Seismic":   ("#a78bfa", "18px"),  # violet — earthquakes
         "Cyber":     ("#34d399", "18px"),  # emerald — cyber
     }
@@ -158,10 +171,10 @@ def build_dashboard() -> pn.Column:
             pn.Row(
                 _src_cbs[src],
                 pn.pane.HTML(
-                    f'<span style="font-size:{_SRC_ICON_STYLE[src][1]};'
+                    f'<span style="font-size:14px;color:#e2e8f0;font-weight:bold;">{short}</span>'
+                    f'&nbsp;<span style="font-size:{_SRC_ICON_STYLE[src][1]};'
                     f'color:{_SRC_ICON_STYLE[src][0]};line-height:1;">{glyph}</span>'
-                    f'&nbsp;<span style="font-size:12px;color:#e2e8f0;">{short}</span>'
-                    f'<span style="font-size:10px;color:#475569;"> — {desc}</span>',
+                    f'<span style="font-size:11px;color:#94a3b8;"> — {desc}</span>',
                     sizing_mode="stretch_width",
                     margin=0,
                 ),
@@ -337,7 +350,7 @@ def build_dashboard() -> pn.Column:
 
     tabs = pn.Tabs(
         ("🗺  Risk Map",      map_body),
-        ("🔍  Risk Analysis", build_analysis_tab(state.filtered_events())),
+        ("📰  News & Events", build_analysis_tab(state.filtered_events())),
         ("📈  Global Prices", build_commodities_tab()),
         ("💱  Currency FX",   build_currency_tab()),
         ("🤖  AI Explorer",   build_ai_tab()),

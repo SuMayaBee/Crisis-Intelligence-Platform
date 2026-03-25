@@ -33,7 +33,7 @@ _ACCENT   = "#7dd3fc"
 _MUTED    = "#475569"
 
 _HDR_CSS = (
-    "font-size:10px;font-weight:bold;color:{a};"
+    "font-size:13px;font-weight:bold;color:{a};"
     "letter-spacing:2px;text-transform:uppercase;"
     "font-family:'Courier New',monospace;padding:6px 0 2px;"
 ).format(a=_ACCENT)
