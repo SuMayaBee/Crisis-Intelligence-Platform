@@ -158,10 +158,10 @@ def build_dashboard() -> pn.Column:
             pn.Row(
                 _src_cbs[src],
                 pn.pane.HTML(
-                    f'<span style="font-size:12px;color:#e2e8f0;">{short}</span>'
-                    f'<span style="font-size:11px;color:#475569;"> (Source: {src})</span>'
-                    f'&nbsp;<span style="font-size:{_SRC_ICON_STYLE[src][1]};'
-                    f'color:{_SRC_ICON_STYLE[src][0]};line-height:1;">{glyph}</span>',
+                    f'<span style="font-size:{_SRC_ICON_STYLE[src][1]};'
+                    f'color:{_SRC_ICON_STYLE[src][0]};line-height:1;">{glyph}</span>'
+                    f'&nbsp;<span style="font-size:12px;color:#e2e8f0;">{short}</span>'
+                    f'<span style="font-size:10px;color:#475569;"> — {desc}</span>',
                     sizing_mode="stretch_width",
                     margin=0,
                 ),
@@ -169,7 +169,7 @@ def build_dashboard() -> pn.Column:
                 align="center",
                 margin=(3, 0),
             )
-            for src, (glyph, short, _desc) in SOURCE_SHAPES.items()
+            for src, (glyph, short, desc) in SOURCE_SHAPES.items()
         ],
         margin=0,
         sizing_mode="stretch_width",

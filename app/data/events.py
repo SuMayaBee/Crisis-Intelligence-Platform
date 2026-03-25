@@ -755,4 +755,7 @@ def load_events() -> pd.DataFrame:
     events = events.dropna(subset=["timestamp", "lat", "lon"]).copy()
     events["timestamp"] = pd.to_datetime(events["timestamp"], utc=True, errors="coerce")
     events["severity"] = pd.to_numeric(events["severity"], errors="coerce").fillna(1).astype(int)
+    events = events.drop_duplicates(
+        subset=["source", "lon", "lat", "timestamp"], keep="first"
+    ).reset_index(drop=True)
     return events

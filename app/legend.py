@@ -34,14 +34,14 @@ SEV_LABEL: dict[int, str] = {
 # shape_char is a Unicode glyph that matches the Bokeh marker used on the map.
 SOURCE_SHAPES: dict[str, tuple[str, str, str]] = {
     #               unicode  short label      one-line description
-    "GDELT":      ("●",  "Conflict",   "Real-time global conflict events (GDELT)"),
-    "FIRMS":      ("▲",  "Fire",       "NASA satellite thermal anomalies"),
-    "OpenSky":    ("◆",  "Aviation",   "Live aircraft (ADS-B transponders)"),
-    "NOAA":       ("■",  "Weather",    "Active NWS severe weather alerts"),
-    "Maritime":   ("▼",  "AIS Ships",  "Vessel tracking — Hormuz / Red Sea / Gulf"),
-    "Rocket":     ("★",  "Rocket",     "Israel Home Front Command alerts"),
-    "Seismic":    ("⬡",  "Earthquake", "USGS M≥2.5 earthquakes (7-day)"),
-    "Cyber":      ("✚",  "Cyber",      "AlienVault OTX threat intelligence"),
+    "GDELT":      ("●",  "Conflict",        "global events"),
+    "FIRMS":      ("▲",  "Fire",            "satellite thermal anomalies"),
+    "NOAA":       ("■",  "Weather",         "NWS alerts"),
+    "OpenSky":    ("◆",  "Flight Tracking", "aircraft tracking"),
+    "Maritime":   ("▼",  "AIS Ships",       "maritime tracking"),
+    "Rocket":     ("★",  "Rocket",          "launch & strike alerts"),
+    "Seismic":    ("⬡",  "Earthquake",      "seismic activity"),
+    "Cyber":      ("✚",  "Cyber",           "threat intelligence"),
 }
 
 # Bokeh marker names matched to each source
