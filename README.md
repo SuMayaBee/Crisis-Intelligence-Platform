@@ -49,19 +49,73 @@ All data in this platform is sourced from **free, open APIs** — no paywalls, n
 ## Tabs
 
 ### 🗺 Risk Map
-The main view. Every event on the map is a `gv.Points` layer rendered on a CartoDark tile source via **GeoViews**, with Cartopy handling the Google Mercator projection. Each data source (conflict, fire, earthquake, weather alert, flight, maritime) has its own shape and color encoding. When all sources are active, **Datashader** rasterizes the combined point cloud server-side so the browser receives a smooth density image instead of thousands of individual glyphs. The sidebar filters (source, region, severity) are powered by **Param** — a `DashboardState` class built on `param.Parameterized` that keeps all downstream components reactive.
+Live global event map built with **GeoViews** on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. **Datashader** rasterizes high-density point clouds server-side for smooth performance. Sidebar filters (source, region, severity) powered by **Param**.
+
+<!-- add screenshot -->
 
 ### 📰 News & Events
-Cross-filtering powered by `hv.link_selections` (**HoloViews**). Draw a bounding box on the map and the severity histogram (`hv.operation.histogram`), box plot (`hv.BoxWhisker`), and summary stats all update simultaneously — no manual callbacks. The news feed on the right reacts to the same selection: it parses the bounding coordinates from the `sel_expr`, identifies the dominant region in that box, and fetches live headlines from Google News RSS. Map selection → live regional news in one gesture.
+Cross-filtering via `hv.link_selections` (**HoloViews**). Draw a box on the map → severity histogram, box plot, and stats all update instantly. The news feed fetches live Google News RSS headlines for the selected region automatically.
+
+<!-- add screenshot -->
 
 ### 📈 Global Prices
-Commodity price history — Gold, Oil, Natural Gas, Wheat, Copper, Silver and more — fetched from Yahoo Finance and rendered with `df.hvplot.line()` (**hvPlot**). Date range picker updates the chart reactively via `pn.bind`. The entire tab is pure pandas + hvPlot + **Panel**.
+Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finance rendered with **hvPlot**. Date range picker updates charts reactively via `pn.bind`.
+
+<!-- add screenshot -->
 
 ### 💱 Currency FX
-1-day percentage change of currencies vs USD, grouped by region (Middle East, Asia-Pacific, Europe, Americas, Geopolitical). Color-coded bars: green = currency weakened against dollar, red = currency strengthened. Built with `df.hvplot.barh()`. Region dropdown updates reactively via **Param**. Useful for tracking economic pressure on countries involved in conflicts in real time.
+1-day % change of currencies vs USD by region. Green = weakened against dollar, red = strengthened. Built with **hvPlot** + **Param**. Useful for tracking real-time economic impact of conflicts.
+
+<!-- add screenshot -->
 
 ### 🤖 AI Explorer
-A **Panel ChatInterface** backed by **Gemini** with a **DuckDB** in-memory database loaded at startup with all risk events, commodities, FX, and market data. When you ask a question, Gemini decides whether to run SQL against DuckDB, fetch live stock/crypto data from Yahoo Finance, or trigger a Google Search. It returns a JSON spec and the app renders an **hvPlot** chart or **GeoViews** map inline inside the chat bubble. Built on Panel's async generator callback pattern — loading indicator, answer text, and chart all appear progressively in the same message.
+**Panel ChatInterface** + **Gemini** + **DuckDB**. Ask questions in natural language — the AI runs SQL, fetches live stock data from Yahoo Finance, or searches the web, then renders an **hvPlot** or **GeoViews** chart directly in the chat.
+
+Example questions:
+
+- *"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
+- *"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
+- *"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
+- *"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
+
+<!-- add screenshots -->
+
+---
+
+## Architecture
+
+<table>
+  <tr>
+    <td colspan="5" align="center"><b>Panel Dashboard</b><br><sub>Reactive Callbacks &nbsp;·&nbsp; Dark Mode &nbsp;·&nbsp; Multi-Source &nbsp;·&nbsp; AI-Powered</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><b>🗺 Risk Map</b><br><sub>GeoViews · Datashader<br>CartoDark Tiles<br>Param Filters</sub></td>
+    <td align="center"><b>📰 News & Events</b><br><sub>hv.link_selections<br>Histogram · BoxWhisker<br>Google News RSS</sub></td>
+    <td align="center"><b>📈 Global Prices</b><br><sub>hvPlot · Yahoo Finance<br>Date Range Picker<br>pn.bind</sub></td>
+    <td align="center"><b>💱 Currency FX</b><br><sub>hvPlot · ExchangeRate<br>Region Filter<br>Param</sub></td>
+    <td align="center"><b>🤖 AI Explorer</b><br><sub>ChatInterface · Gemini<br>DuckDB · hvPlot<br>GeoViews</sub></td>
+  </tr>
+  <tr>
+    <td colspan="5" align="center"><b>HoloViz Stack</b><br><sub>Panel &nbsp;·&nbsp; HoloViews &nbsp;·&nbsp; hvPlot &nbsp;·&nbsp; GeoViews &nbsp;·&nbsp; Datashader &nbsp;·&nbsp; Param &nbsp;·&nbsp; Bokeh</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><b>GeoViews</b><br><sub>gv.Points<br>CartoDark Tiles<br>Mercator Projection</sub></td>
+    <td align="center"><b>HoloViews</b><br><sub>link_selections<br>BoxWhisker · Histogram<br>hv.Dataset</sub></td>
+    <td align="center"><b>hvPlot</b><br><sub>hvplot.line()<br>hvplot.barh()<br>hvplot.scatter()</sub></td>
+    <td align="center"><b>Datashader</b><br><sub>Point Rasterization<br>Density Heatmap<br>Server-side Render</sub></td>
+    <td align="center"><b>Param</b><br><sub>DashboardState<br>param.Parameterized<br>param.watch · pn.bind</sub></td>
+  </tr>
+  <tr>
+    <td colspan="5" align="center"><b>Data Layer</b><br><sub>pandas &nbsp;·&nbsp; numpy &nbsp;·&nbsp; DuckDB &nbsp;·&nbsp; Python</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><b>GDELT</b><br><sub>Conflict Events<br>Free · No Key</sub></td>
+    <td align="center"><b>NASA FIRMS</b><br><sub>Fire Hotspots<br>Free Key</sub></td>
+    <td align="center"><b>OpenSky · NOAA</b><br><sub>Flight Tracking<br>Weather Alerts · Free</sub></td>
+    <td align="center"><b>Yahoo Finance</b><br><sub>Stocks · Commodities<br>OHLCV · Free</sub></td>
+    <td align="center"><b>Google News RSS</b><br><sub>Live Headlines<br>Free · No Key</sub></td>
+  </tr>
+</table>
 
 ---
 
