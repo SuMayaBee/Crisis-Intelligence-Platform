@@ -348,12 +348,25 @@ def build_dashboard() -> pn.Column:
         sizing_mode="stretch_both",
     )
 
+    _tab_news     = pn.Column(build_analysis_tab(state.filtered_events()), sizing_mode="stretch_both", loading=True)
+    _tab_prices   = pn.Column(build_commodities_tab(),                     sizing_mode="stretch_both", loading=True)
+    _tab_currency = pn.Column(build_currency_tab(),                        sizing_mode="stretch_both", loading=True)
+    _tab_ai       = pn.Column(build_ai_tab(),                              sizing_mode="stretch_both", loading=True)
+
+    def _clear_loading():
+        _tab_news.loading     = False
+        _tab_prices.loading   = False
+        _tab_currency.loading = False
+        _tab_ai.loading       = False
+
+    pn.state.onload(_clear_loading)
+
     tabs = pn.Tabs(
         ("🗺  Risk Map",      map_body),
-        ("📰  News & Events", build_analysis_tab(state.filtered_events())),
-        ("📈  Global Prices", build_commodities_tab()),
-        ("💱  Currency FX",   build_currency_tab()),
-        ("🤖  AI Explorer",   build_ai_tab()),
+        ("📰  News & Events", _tab_news),
+        ("📈  Global Prices", _tab_prices),
+        ("💱  Currency FX",   _tab_currency),
+        ("🤖  AI Explorer",   _tab_ai),
         dynamic=True,
         sizing_mode="stretch_both",
         stylesheets=[_TAB_CSS],
