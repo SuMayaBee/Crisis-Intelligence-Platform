@@ -12,25 +12,25 @@ A real-time global risk intelligence dashboard built entirely with the **HoloViz
 
 Live global event map built with **GeoViews** on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. **Datashader** rasterizes high-density point clouds server-side for smooth performance. Sidebar filters (source, region, severity) powered by **Param**.
 
-<!-- add screenshot -->
+<img width="1891" height="937" alt="image" src="https://github.com/user-attachments/assets/4cb55ed6-0723-4648-86b8-01a054f70863" />
 
 ### 📰 News & Events
 
 Cross-filtering via `hv.link_selections` (**HoloViews**). Draw a box on the map → severity histogram, box plot, and stats all update instantly. The news feed fetches live Google News RSS headlines for the selected region automatically.
 
-<!-- add screenshot -->
+<img width="1892" height="936" alt="image" src="https://github.com/user-attachments/assets/9d0f7cb1-bed9-44d8-87b0-03749e875dfd" />
 
 ### 📈 Global Prices
 
 Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finance rendered with **hvPlot**. Date range picker updates charts reactively via `pn.bind`.
 
-<!-- add screenshot -->
+<img width="1897" height="947" alt="image" src="https://github.com/user-attachments/assets/65889931-3263-4f73-8db2-bf5d45225d45" />
 
 ### 💱 Currency FX
 
 1-day % change of currencies vs USD by region. Green = weakened against dollar, red = strengthened. Built with **hvPlot** + **Param**. Useful for tracking real-time economic impact of conflicts.
 
-<!-- add screenshot -->
+<img width="1908" height="948" alt="image" src="https://github.com/user-attachments/assets/a84bcc31-d2a9-4ce4-b727-8b44c0779a4b" />
 
 ### 🤖 AI Explorer
 
@@ -39,11 +39,14 @@ Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finan
 Example questions:
 
 - *"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
+  <img width="1896" height="937" alt="image" src="https://github.com/user-attachments/assets/d8014950-d5f8-44dc-a2e1-5bca100cbff4" />
 - *"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
+  <img width="1899" height="955" alt="image" src="https://github.com/user-attachments/assets/9529bc91-e270-4b52-9c97-261fe81eff10" />
 - *"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
+  <img width="1893" height="946" alt="image" src="https://github.com/user-attachments/assets/7159f4ea-3df8-421e-a995-674b44a5d458" />
 - *"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
+  <img width="1899" height="935" alt="image" src="https://github.com/user-attachments/assets/3b5a89d3-15b5-4232-845e-90337eb3456d" />
 
-<!-- add screenshots -->
 
 ---
 
