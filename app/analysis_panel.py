@@ -109,7 +109,7 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
     sev_hist = hv_histogram(
         hv.Dataset(df, kdims=["severity"], vdims=["lon", "lat"]),
         dimension="severity",
-        bins=5,
+        num_bins=5,
         normed=False,
     ).opts(
         color=_ACCENT,
@@ -122,17 +122,35 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
     )
     linked_sev = ls(sev_hist)
 
+    import re
+    _BOUNDS_RE = re.compile(
+        r"dim\('lon'\)\s*>=\s*([-\d.eE+]+).*?"
+        r"dim\('lon'\)\s*<=\s*([-\d.eE+]+).*?"
+        r"dim\('lat'\)\s*>=\s*([-\d.eE+]+).*?"
+        r"dim\('lat'\)\s*<=\s*([-\d.eE+]+)",
+        re.DOTALL,
+    )
+
     def _filter_df(sel_expr):
-        """Apply link_selections expression to raw df; fall back to full df."""
+        """Parse lon/lat bounds from selection expression, filter with pandas."""
         if sel_expr is None:
+            print("[DEBUG] _filter_df: no selection")
             return df
-        try:
-            hv_ds = hv.Dataset(df, kdims=["lon", "lat"],
-                               vdims=["source", "severity", "region"])
-            mask = sel_expr.apply(hv_ds, expanded=False, flat=True)
-            return df[mask]
-        except Exception:
+        expr_str = repr(sel_expr)
+        print(f"[DEBUG] _filter_df: sel_expr = {expr_str}")
+        m = _BOUNDS_RE.search(expr_str)
+        if not m:
+            print("[DEBUG] _filter_df: could not parse bounds from expression")
             return df
+        lon0, lon1 = float(m.group(1)), float(m.group(2))
+        lat0, lat1 = float(m.group(3)), float(m.group(4))
+        print(f"[DEBUG] _filter_df: parsed bounds lon=[{lon0:.2f},{lon1:.2f}] lat=[{lat0:.2f},{lat1:.2f}]")
+        fdf = df[
+            df["lon"].between(lon0, lon1) &
+            df["lat"].between(lat0, lat1)
+        ]
+        print(f"[DEBUG] _filter_df: OK — {len(fdf)} / {len(df)} rows selected")
+        return fdf
 
     _SRC_COLORS = {
         "GDELT":    "#ef4444",
@@ -348,6 +366,7 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
             return
 
         if fdf.empty:
+            print("[DEBUG] _on_selection: fdf is empty after filter")
             feed_pane.object = (
                 f'<div style="color:#475569;font-size:11px;'
                 f'font-family:Courier New,monospace;padding:20px 0;">'
@@ -355,7 +374,16 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
             )
             return
 
-        region = fdf["region"].value_counts().index[0]
+        region_counts = fdf["region"].value_counts()
+        region = region_counts.index[0]
+        print(f"[DEBUG] _on_selection: fdf has {len(fdf)} rows")
+        print(f"[DEBUG] _on_selection: region counts =\n{region_counts.head(5)}")
+        print(f"[DEBUG] _on_selection: top region = {region!r}")
+
+        q = urllib.parse.quote(region)
+        api_url = f"https://news.google.com/rss/search?q={q}&gl=US&hl=en&ceid=US:en"
+        print(f"[DEBUG] _on_selection: Google News URL = {api_url}")
+
         feed_pane.object = (
             f'<div style="color:{_ACCENT};font-size:10px;'
             f'font-family:Courier New,monospace;padding:12px 0;">'
@@ -365,8 +393,10 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
         def _fetch():
             try:
                 articles = _fetch_google_news(region)
+                print(f"[DEBUG] _fetch: got {len(articles)} articles for {region!r}")
                 feed_pane.object = _make_news_html(articles, region)
             except Exception as exc:
+                print(f"[DEBUG] _fetch: FAILED — {exc!r}")
                 feed_pane.object = (
                     f'<div style="color:#f87171;font-size:10px;'
                     f'font-family:Courier New,monospace;padding:12px 0;">'
