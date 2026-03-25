@@ -7,6 +7,7 @@ A real-time global risk intelligence dashboard built entirely with the **HoloViz
 ## Motivation
 
 The Iran-Israel conflict, oil prices spiking, currencies crashing overnight — all this information exists but it's scattered across a dozen tools and paywalled platforms. I wanted to bring it all into one place, built entirely in Python with the HoloViz stack, using only free APIs. This is that platform — and a demonstration of how far HoloViz can go on a real-world, data-heavy application.
+
 ---
 
 ## What is HoloViz?
