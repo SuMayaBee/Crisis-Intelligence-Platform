@@ -13,6 +13,10 @@ Full HoloViz stack showcase:
 """
 from __future__ import annotations
 
+import threading
+import urllib.parse
+import urllib.request
+
 import pandas as pd
 import holoviews as hv
 import geoviews as gv
@@ -130,7 +134,6 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
         except Exception:
             return df
 
-    # ── Severity by source — colored BoxWhisker ───────────────────────────
     _SRC_COLORS = {
         "GDELT":    "#ef4444",
         "FIRMS":    "#f97316",
@@ -146,39 +149,78 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
         height=220, xlabel="", ylabel="Severity",
         ylim=(0, 5.5), xrotation=30, **_CHART_OPTS,
     )
-    src_box = None
-    for _src, _color in _SRC_COLORS.items():
-        _sdf = df[df["source"] == _src]
-        if _sdf.empty:
-            continue
-        _b = hv.BoxWhisker(_sdf, kdims=["source"], vdims=["severity"]).opts(
-            box_color=_color,
-            whisker_color=_color,
-            outlier_color=_color,
-            **_box_opts,
-        )
-        src_box = _b if src_box is None else src_box * _b
 
-    # ── Top active regions bar chart (reactive) ───────────────────────────
-    @pn.depends(ls.param.selection_expr)
-    def _region_bars(sel_expr=None):
-        fdf = _filter_df(sel_expr)
-        top = (
-            fdf.groupby("region").size()
-               .reset_index(name="count")
-               .sort_values("count", ascending=False)
-               .head(10)
-        )
-        return hv.Bars(top, kdims=["region"], vdims=["count"]).opts(
-            color=_ACCENT,
-            alpha=0.85,
-            line_color=None,
-            height=220,
-            xlabel="",
-            ylabel="Events",
-            xrotation=30,
-            **_CHART_OPTS,
-        )
+    # Stream that fires whenever ls.selection_expr changes — this is
+    # HoloViews' own mechanism and is guaranteed to work in server mode.
+    _sel_stream = hv.streams.Params(ls, ["selection_expr"])
+
+    # ── Severity by source — reactive colored BoxWhisker ─────────────────
+    def _build_box_overlay(selection_expr=None):
+        fdf = _filter_df(selection_expr)
+        box = None
+        for _src, _color in _SRC_COLORS.items():
+            _sdf = fdf[fdf["source"] == _src]
+            if _sdf.empty:
+                continue
+            _b = hv.BoxWhisker(
+                _sdf, kdims=["source"], vdims=["severity"],
+            ).opts(
+                box_color=_color, whisker_color=_color,
+                outlier_color=_color, **_box_opts,
+            )
+            box = _b if box is None else box * _b
+        if box is None:
+            box = hv.BoxWhisker(
+                pd.DataFrame({"source": pd.Series([], dtype=str),
+                              "severity": pd.Series([], dtype=float)}),
+                kdims=["source"], vdims=["severity"],
+            ).opts(**_box_opts)
+        return box
+
+    dmap_box = hv.DynamicMap(_build_box_overlay, streams=[_sel_stream])
+
+    # ── Summary stats cards — reactive ───────────────────────────────────
+    _card_css = (
+        "display:inline-flex;flex-direction:column;align-items:center;"
+        f"justify-content:center;background:{_PANEL_BG};"
+        f"border:1px solid {_BORDER};border-radius:8px;"
+        "padding:12px 8px;width:calc(50% - 6px);box-sizing:border-box;"
+    )
+    _num_css = f"font-size:22px;font-weight:bold;color:{_ACCENT};font-family:'Courier New',monospace;"
+    _lbl_css = "font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#475569;margin-top:4px;font-family:'Courier New',monospace;"
+
+    def _make_stats_html(fdf):
+        if fdf.empty:
+            total, avg_sev, top_src, top_reg = 0, 0.0, "—", "—"
+        else:
+            total   = len(fdf)
+            avg_sev = fdf["severity"].mean()
+            top_src = fdf["source"].value_counts().index[0]
+            top_reg = fdf["region"].value_counts().index[0]
+        return f"""
+        <div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 10px;">
+          <div style="{_card_css}">
+            <span style="{_num_css}">{total:,}</span>
+            <span style="{_lbl_css}">Total Events</span>
+          </div>
+          <div style="{_card_css}">
+            <span style="{_num_css}">{avg_sev:.1f}</span>
+            <span style="{_lbl_css}">Avg Severity</span>
+          </div>
+          <div style="{_card_css}">
+            <span style="{_num_css};font-size:16px;">{top_src}</span>
+            <span style="{_lbl_css}">Top Source</span>
+          </div>
+          <div style="{_card_css}">
+            <span style="{_num_css};font-size:13px;text-align:center;">{top_reg}</span>
+            <span style="{_lbl_css}">Top Region</span>
+          </div>
+        </div>
+        """
+
+    stats_pane = pn.pane.HTML(
+        _make_stats_html(df), sizing_mode="stretch_width", margin=0,
+    )
 
     # ── Instruction hint + clear button ──────────────────────────────────
     clear_btn = pn.widgets.Button(
@@ -198,6 +240,7 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
 
     def _clear(event):
         ls.selection_expr = None
+        feed_pane.object = _PLACEHOLDER
 
     clear_btn.on_click(_clear)
 
@@ -219,16 +262,129 @@ def build_analysis_tab(df: pd.DataFrame | None = None) -> pn.viewable.Viewable:
         margin=0,
     )
 
+    # ── Google News RSS feed (reactive) ──────────────────────────────────
+    import xml.etree.ElementTree as ET
+
+    _GNEWS_BASE = "https://news.google.com/rss/search"
+
+    def _fetch_google_news(region: str, max_results: int = 20) -> list[dict]:
+        """Single Google News RSS call — searches directly by region keyword."""
+        q = urllib.parse.quote(region)
+        url = f"{_GNEWS_BASE}?q={q}&gl=US&hl=en&ceid=US:en"
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "Mozilla/5.0 HoloIntel/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            tree = ET.parse(resp)
+        articles = []
+        for item in tree.findall(".//item"):
+            title = (item.findtext("title") or "").strip()
+            link  = (item.findtext("link")  or "").strip()
+            pub   = (item.findtext("pubDate") or "").strip()
+            src_el = item.find("source")
+            source = (src_el.text or "Google News").strip() if src_el is not None else "Google News"
+            if title:
+                articles.append({
+                    "source": source,
+                    "title":  title,
+                    "url":    link,
+                    "date":   pub,
+                })
+        return articles[:max_results]
+
+    def _make_news_html(articles: list[dict], region: str) -> str:
+        if not articles:
+            return (
+                f'<div style="color:#475569;font-size:11px;'
+                f'font-family:Courier New,monospace;padding:20px 0;">'
+                f'No news found for <em>{region}</em>.</div>'
+            )
+        items = []
+        for art in articles:
+            title = art["title"]
+            if len(title) > 100:
+                title = title[:97] + "…"
+            try:
+                date_str = pd.Timestamp(art["date"]).strftime("%b %d")
+            except Exception:
+                date_str = ""
+            items.append(f"""
+            <div style="border-bottom:1px solid {_BORDER};padding:8px 0;">
+              <div style="color:#475569;font-size:9px;font-family:'Courier New',monospace;
+                          margin-bottom:3px;">{art['source']} &nbsp;·&nbsp; {date_str}</div>
+              <a href="{art['url']}" target="_blank"
+                 style="color:#e2e8f0;font-size:11px;font-family:'Courier New',monospace;
+                        text-decoration:none;line-height:1.5;">{title}</a>
+            </div>""")
+        return (
+            f'<div style="font-size:9px;color:{_ACCENT};font-family:Courier New,monospace;'
+            f'padding-bottom:6px;">Google News &nbsp;|&nbsp; '
+            f'region: <em>{region}</em></div>'
+            + "".join(items)
+        )
+
+    _PLACEHOLDER = (
+        f'<div style="color:#475569;font-size:11px;font-family:Courier New,monospace;'
+        f'padding:20px 0;">Box-select a region on the map to load latest news.</div>'
+    )
+
+    feed_pane = pn.pane.HTML(
+        _PLACEHOLDER,
+        sizing_mode="stretch_width",
+        margin=0,
+        styles={"overflow-y": "auto", "max-height": "520px"},
+    )
+
+    # Single subscriber drives stats + news from the same reliable stream.
+    # _sel_stream (Params watching ls.selection_expr) is the only mechanism
+    # guaranteed to fire in Bokeh server mode — BoundsXY silently drops
+    # calls because it passes x0/y0/x1/y1 as keyword args, not positional.
+    def _on_selection(selection_expr=None):
+        fdf = _filter_df(selection_expr)
+        stats_pane.object = _make_stats_html(fdf)
+
+        if selection_expr is None:
+            feed_pane.object = _PLACEHOLDER
+            return
+
+        if fdf.empty:
+            feed_pane.object = (
+                f'<div style="color:#475569;font-size:11px;'
+                f'font-family:Courier New,monospace;padding:20px 0;">'
+                f'No events in selection.</div>'
+            )
+            return
+
+        region = fdf["region"].value_counts().index[0]
+        feed_pane.object = (
+            f'<div style="color:{_ACCENT};font-size:10px;'
+            f'font-family:Courier New,monospace;padding:12px 0;">'
+            f'Fetching news for <em>{region}</em>…</div>'
+        )
+
+        def _fetch():
+            try:
+                articles = _fetch_google_news(region)
+                feed_pane.object = _make_news_html(articles, region)
+            except Exception as exc:
+                feed_pane.object = (
+                    f'<div style="color:#f87171;font-size:10px;'
+                    f'font-family:Courier New,monospace;padding:12px 0;">'
+                    f'News fetch failed: {exc}</div>'
+                )
+
+        threading.Thread(target=_fetch, daemon=True).start()
+
+    _sel_stream.add_subscriber(_on_selection)
+
     # ── Right chart column ────────────────────────────────────────────────
     charts = pn.Column(
         hint,
         _hdr("Severity distribution"),
         pn.pane.HoloViews(linked_sev, sizing_mode="stretch_width", margin=0),
-        _hdr("Severity by source"),
-        pn.pane.HoloViews(src_box, sizing_mode="stretch_width", margin=0),
-        # _hdr("Top active regions"),
-        # _region_bars,
-        # pn.Spacer(),
+        _hdr("Latest news (Google News)"),
+        feed_pane,
+        pn.Spacer(),
         sizing_mode="stretch_height",
         styles={
             "background":  _BG,
