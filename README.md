@@ -8,61 +8,64 @@ A real-time global risk intelligence dashboard built entirely with the **HoloViz
 
 ## Tabs
 
-### 🗺 Risk Map
-
-Live global event map built with **GeoViews** on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. **Datashader** rasterizes high-density point clouds server-side for smooth performance. Sidebar filters (source, region, severity) powered by **Param**.
-
-<p align="center">
-  <img width="900" alt="Risk Map" src="https://github.com/user-attachments/assets/4cb55ed6-0723-4648-86b8-01a054f70863" />
-</p>
-
-### 📰 News & Events
-
-Cross-filtering via `hv.link_selections` (**HoloViews**). Draw a box on the map → severity histogram, box plot, and stats all update instantly. The news feed fetches live Google News RSS headlines for the selected region automatically.
-
-<p align="center">
-  <img width="900" alt="News & Events" src="https://github.com/user-attachments/assets/9d0f7cb1-bed9-44d8-87b0-03749e875dfd" />
-</p>
-
-### 📈 Global Prices
-
-Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finance rendered with **hvPlot**. Date range picker updates charts reactively via `pn.bind`.
-
-<p align="center">
-  <img width="900" alt="Global Prices" src="https://github.com/user-attachments/assets/65889931-3263-4f73-8db2-bf5d45225d45" />
-</p>
-
-### 💱 Currency FX
-
-1-day % change of currencies vs USD by region. Green = weakened against dollar, red = strengthened. Built with **hvPlot** + **Param**. Useful for tracking real-time economic impact of conflicts.
-
-<p align="center">
-  <img width="900" alt="Currency FX" src="https://github.com/user-attachments/assets/a84bcc31-d2a9-4ce4-b727-8b44c0779a4b" />
-</p>
-
-### 🤖 AI Explorer
-
-**Panel ChatInterface** + **Gemini** + **DuckDB**. Ask questions in natural language — the AI runs SQL, fetches live stock data from Yahoo Finance, or searches the web, then renders an **hvPlot** or **GeoViews** chart directly in the chat.
-
 <table>
   <tr>
-    <td align="center" width="50%">
-      <img width="440" alt="Risk overview of Asia" src="https://github.com/user-attachments/assets/d8014950-d5f8-44dc-a2e1-5bca100cbff4" /><br>
-      <sub><i>"Give me a risk overview of Asia"</i> — live GeoViews map</sub>
+    <td valign="top" width="35%">
+      <h3>🗺 Risk Map</h3>
+      Live global event map built with <b>GeoViews</b> on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. <b>Datashader</b> rasterizes high-density point clouds server-side. Sidebar filters powered by <b>Param</b>.
     </td>
-    <td align="center" width="50%">
-      <img width="440" alt="Gold vs oil price" src="https://github.com/user-attachments/assets/9529bc91-e270-4b52-9c97-261fe81eff10" /><br>
-      <sub><i>"Plot gold vs oil price over time"</i> — two hvPlot charts side by side</sub>
+    <td valign="top" width="65%">
+      <img width="100%" alt="Risk Map" src="https://github.com/user-attachments/assets/4cb55ed6-0723-4648-86b8-01a054f70863" />
     </td>
   </tr>
   <tr>
-    <td align="center" width="50%">
-      <img width="440" alt="Tesla stock price" src="https://github.com/user-attachments/assets/7159f4ea-3df8-421e-a995-674b44a5d458" /><br>
-      <sub><i>"Show me Tesla stock price"</i> — live Yahoo Finance line chart</sub>
+    <td valign="top">
+      <h3>📰 News &amp; Events</h3>
+      Cross-filtering via <code>hv.link_selections</code> (<b>HoloViews</b>). Draw a box on the map → severity histogram, box plot, and stats all update instantly. News feed fetches live Google News RSS headlines for the selected region.
     </td>
-    <td align="center" width="50%">
-      <img width="440" alt="Iran-Israel conflict news" src="https://github.com/user-attachments/assets/3b5a89d3-15b5-4232-845e-90337eb3456d" /><br>
-      <sub><i>"What's the latest news on the Iran-Israel conflict?"</i> — Google Search grounding</sub>
+    <td valign="top">
+      <img width="100%" alt="News & Events" src="https://github.com/user-attachments/assets/9d0f7cb1-bed9-44d8-87b0-03749e875dfd" />
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>📈 Global Prices</h3>
+      Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finance rendered with <b>hvPlot</b>. Date range picker updates charts reactively via <code>pn.bind</code>.
+    </td>
+    <td valign="top">
+      <img width="100%" alt="Global Prices" src="https://github.com/user-attachments/assets/65889931-3263-4f73-8db2-bf5d45225d45" />
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>💱 Currency FX</h3>
+      1-day % change of currencies vs USD by region. Green = weakened against dollar, red = strengthened. Built with <b>hvPlot</b> + <b>Param</b>. Useful for tracking real-time economic impact of conflicts.
+    </td>
+    <td valign="top">
+      <img width="100%" alt="Currency FX" src="https://github.com/user-attachments/assets/a84bcc31-d2a9-4ce4-b727-8b44c0779a4b" />
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <h3>🤖 AI Explorer</h3>
+      <b>Panel ChatInterface</b> + <b>Gemini</b> + <b>DuckDB</b>. Ask in natural language — the AI runs SQL, fetches live stock data, or searches the web, then renders an <b>hvPlot</b> or <b>GeoViews</b> chart directly in the chat.
+      <br><br>
+      <i>"Give me a risk overview of Asia"</i><br>
+      <i>"Plot gold vs oil price over time"</i><br>
+      <i>"Show me Tesla stock price"</i><br>
+      <i>"What's the latest news on the Iran-Israel conflict?"</i>
+    </td>
+    <td valign="top">
+      <table>
+        <tr>
+          <td><img width="100%" alt="Risk overview of Asia" src="https://github.com/user-attachments/assets/d8014950-d5f8-44dc-a2e1-5bca100cbff4" /></td>
+          <td><img width="100%" alt="Gold vs oil price" src="https://github.com/user-attachments/assets/9529bc91-e270-4b52-9c97-261fe81eff10" /></td>
+        </tr>
+        <tr>
+          <td><img width="100%" alt="Tesla stock price" src="https://github.com/user-attachments/assets/7159f4ea-3df8-421e-a995-674b44a5d458" /></td>
+          <td><img width="100%" alt="Iran-Israel conflict news" src="https://github.com/user-attachments/assets/3b5a89d3-15b5-4232-845e-90337eb3456d" /></td>
+        </tr>
+      </table>
     </td>
   </tr>
 </table>
