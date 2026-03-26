@@ -46,20 +46,26 @@ Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finan
 
 Example questions:
 
-- *"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
-- *"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
-- *"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
-- *"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
+*"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
 
 <p align="center">
   <img width="900" alt="Risk overview of Asia" src="https://github.com/user-attachments/assets/d8014950-d5f8-44dc-a2e1-5bca100cbff4" />
 </p>
+
+*"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
+
 <p align="center">
   <img width="900" alt="Gold vs oil price" src="https://github.com/user-attachments/assets/9529bc91-e270-4b52-9c97-261fe81eff10" />
 </p>
+
+*"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
+
 <p align="center">
   <img width="900" alt="Tesla stock price" src="https://github.com/user-attachments/assets/7159f4ea-3df8-421e-a995-674b44a5d458" />
 </p>
+
+*"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
+
 <p align="center">
   <img width="900" alt="Iran-Israel conflict news" src="https://github.com/user-attachments/assets/3b5a89d3-15b5-4232-845e-90337eb3456d" />
 </p>
@@ -97,6 +103,21 @@ All data in this platform is sourced from **free, open APIs** — no paywalls, n
 | **ExchangeRate.host** | Live FX rates vs USD | Free key at exchangerate.host |
 | **Google News RSS** | Regional news feed | Free, no key required |
 | **Gemini (Google AI)** | AI Explorer LLM | Free key at aistudio.google.com |
+
+---
+
+## Features
+
+- **Live global risk map** — conflict, fire, earthquake, weather, flight, and maritime events plotted on CartoDark tiles with distinct shapes and colors per source
+- **Server-side rendering** — Datashader rasterizes high-density point clouds for smooth map performance without sending thousands of points to the browser
+- **Cross-filtering** — draw a selection box on the map and severity histogram, box plot, and stats all update instantly via `hv.link_selections`
+- **Live news feed** — Google News RSS headlines auto-fetch for the selected region when a box is drawn on the map
+- **Commodity price history** — interactive line charts for Gold, Oil, Gas, Wheat, Copper, and Silver with a reactive date range picker
+- **Currency FX tracker** — 1-day % change vs USD by region, color-coded to show currency weakening vs strengthening
+- **AI Explorer** — natural language interface powered by Gemini; ask questions and get live SQL queries, stock lookups, web searches, and rendered hvPlot/GeoViews charts directly in chat
+- **Sidebar filters** — filter by event source, region, and severity across all tabs via Param-based reactive state
+- **Fully Python** — no JavaScript, no separate frontend; built entirely on the HoloViz stack (Panel, HoloViews, hvPlot, GeoViews, Datashader, Param)
+- **Free data only** — all data sourced from open, free APIs with no paid subscriptions required
 
 ---
 
