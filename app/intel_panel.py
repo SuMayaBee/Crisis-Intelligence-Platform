@@ -151,6 +151,7 @@ def build_currency_tab() -> pn.Column:
                 x="pair", y="change_pct",
                 c="change_pct", cmap="RdYlGn",
                 clim=(-clim, clim), colorbar=False,
+                xlim=(-clim, clim),
                 xlabel="Δ% (today)", ylabel="",
                 responsive=True, height=h, grid=True, fontscale=0.9,
             )

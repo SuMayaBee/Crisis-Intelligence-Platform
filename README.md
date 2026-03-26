@@ -52,14 +52,16 @@ Example questions:
 - *"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
 
 <p align="center">
-  <img width="440" alt="Risk overview of Asia" src="https://github.com/user-attachments/assets/d8014950-d5f8-44dc-a2e1-5bca100cbff4" />
-  &nbsp;
-  <img width="440" alt="Gold vs oil price" src="https://github.com/user-attachments/assets/9529bc91-e270-4b52-9c97-261fe81eff10" />
+  <img width="900" alt="Risk overview of Asia" src="https://github.com/user-attachments/assets/d8014950-d5f8-44dc-a2e1-5bca100cbff4" />
 </p>
 <p align="center">
-  <img width="440" alt="Tesla stock price" src="https://github.com/user-attachments/assets/7159f4ea-3df8-421e-a995-674b44a5d458" />
-  &nbsp;
-  <img width="440" alt="Iran-Israel conflict news" src="https://github.com/user-attachments/assets/3b5a89d3-15b5-4232-845e-90337eb3456d" />
+  <img width="900" alt="Gold vs oil price" src="https://github.com/user-attachments/assets/9529bc91-e270-4b52-9c97-261fe81eff10" />
+</p>
+<p align="center">
+  <img width="900" alt="Tesla stock price" src="https://github.com/user-attachments/assets/7159f4ea-3df8-421e-a995-674b44a5d458" />
+</p>
+<p align="center">
+  <img width="900" alt="Iran-Israel conflict news" src="https://github.com/user-attachments/assets/3b5a89d3-15b5-4232-845e-90337eb3456d" />
 </p>
 
 
