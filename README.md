@@ -46,25 +46,25 @@ Commodity price history (Gold, Oil, Gas, Wheat, Copper, Silver) from Yahoo Finan
 
 Example questions:
 
-*"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
+1. *"Give me a risk overview of Asia"* — renders a live **GeoViews** map inside the chat
 
 <p align="center">
   <img width="900" alt="Risk overview of Asia" src="https://github.com/user-attachments/assets/d8014950-d5f8-44dc-a2e1-5bca100cbff4" />
 </p>
 
-*"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
+2. *"Plot gold vs oil price over time"* — queries DuckDB, renders two **hvPlot** charts side by side
 
 <p align="center">
   <img width="900" alt="Gold vs oil price" src="https://github.com/user-attachments/assets/9529bc91-e270-4b52-9c97-261fe81eff10" />
 </p>
 
-*"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
+3. *"Show me Tesla stock price"* — fetches live data from Yahoo Finance, renders a line chart
 
 <p align="center">
   <img width="900" alt="Tesla stock price" src="https://github.com/user-attachments/assets/7159f4ea-3df8-421e-a995-674b44a5d458" />
 </p>
 
-*"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
+4. *"What's the latest news on the Iran-Israel conflict?"* — Google Search grounding, streams answer in real time
 
 <p align="center">
   <img width="900" alt="Iran-Israel conflict news" src="https://github.com/user-attachments/assets/3b5a89d3-15b5-4232-845e-90337eb3456d" />
