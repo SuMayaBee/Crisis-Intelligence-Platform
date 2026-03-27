@@ -10,7 +10,7 @@ A real-time global risk intelligence dashboard built entirely with the **HoloViz
 
 ### 🗺 Risk Map
 
-Live global event map built with **GeoViews** on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. **Datashader** rasterizes high-density point clouds server-side for smooth performance. Sidebar filters (source, region, severity) powered by **Param**.
+Live global event map built with **GeoViews** on CartoDark tiles. Sources — conflict, fire, earthquake, weather, flight, maritime — each encoded with unique shapes and colors. Sidebar filters (source, region, severity) powered by **Param**.
 
 <p align="center">
   <img width="900" alt="Risk Map" src="https://github.com/user-attachments/assets/4cb55ed6-0723-4648-86b8-01a054f70863" />
@@ -81,7 +81,6 @@ Example questions:
 | **HoloViews** | `link_selections` cross-filtering, BoxWhisker, Histogram |
 | **hvPlot** | Commodity line charts, FX bar charts, stock plots |
 | **GeoViews** | Interactive world map on CartoDark tiles (Mercator projection) |
-| **Datashader** | Server-side rasterization of high-density point clouds on the risk map |
 | **Param** | `DashboardState` — central reactive state, `param.watch`, `pn.bind` |
 | **Bokeh** | Rendering backend for all charts |
 
@@ -109,14 +108,13 @@ All data in this platform is sourced from **free, open APIs** — no paywalls, n
 ## Features
 
 - **Live global risk map** — conflict, fire, earthquake, weather, flight, and maritime events plotted on CartoDark tiles with distinct shapes and colors per source
-- **Server-side rendering** — Datashader rasterizes high-density point clouds for smooth map performance without sending thousands of points to the browser
 - **Cross-filtering** — draw a selection box on the map and severity histogram, box plot, and stats all update instantly via `hv.link_selections`
 - **Live news feed** — Google News RSS headlines auto-fetch for the selected region when a box is drawn on the map
 - **Commodity price history** — interactive line charts for Gold, Oil, Gas, Wheat, Copper, and Silver with a reactive date range picker
 - **Currency FX tracker** — 1-day % change vs USD by region, color-coded to show currency weakening vs strengthening
 - **AI Explorer** — natural language interface powered by Gemini; ask questions and get live SQL queries, stock lookups, web searches, and rendered hvPlot/GeoViews charts directly in chat
 - **Sidebar filters** — filter by event source, region, and severity across all tabs via Param-based reactive state
-- **Fully Python** — no JavaScript, no separate frontend; built entirely on the HoloViz stack (Panel, HoloViews, hvPlot, GeoViews, Datashader, Param)
+- **Fully Python** — no JavaScript, no separate frontend; built entirely on the HoloViz stack (Panel, HoloViews, hvPlot, GeoViews, Param)
 - **Free data only** — all data sourced from open, free APIs with no paid subscriptions required
 
 ---
@@ -128,20 +126,20 @@ All data in this platform is sourced from **free, open APIs** — no paywalls, n
     <td colspan="5" align="center"><b>Panel Dashboard</b><br><sub>Reactive Callbacks &nbsp;·&nbsp; Dark Mode &nbsp;·&nbsp; Multi-Source &nbsp;·&nbsp; AI-Powered</sub></td>
   </tr>
   <tr>
-    <td align="center"><b>🗺 Risk Map</b><br><sub>GeoViews · Datashader<br>CartoDark Tiles<br>Param Filters</sub></td>
+    <td align="center"><b>🗺 Risk Map</b><br><sub>GeoViews<br>CartoDark Tiles<br>Param Filters</sub></td>
     <td align="center"><b>📰 News & Events</b><br><sub>hv.link_selections<br>Histogram · BoxWhisker<br>Google News RSS</sub></td>
     <td align="center"><b>📈 Global Prices</b><br><sub>hvPlot · Yahoo Finance<br>Date Range Picker<br>pn.bind</sub></td>
     <td align="center"><b>💱 Currency FX</b><br><sub>hvPlot · ExchangeRate<br>Region Filter<br>Param</sub></td>
     <td align="center"><b>🤖 AI Explorer</b><br><sub>ChatInterface · Gemini<br>DuckDB · hvPlot<br>GeoViews</sub></td>
   </tr>
   <tr>
-    <td colspan="5" align="center"><b>HoloViz Stack</b><br><sub>Panel &nbsp;·&nbsp; HoloViews &nbsp;·&nbsp; hvPlot &nbsp;·&nbsp; GeoViews &nbsp;·&nbsp; Datashader &nbsp;·&nbsp; Param &nbsp;·&nbsp; Bokeh</sub></td>
+    <td colspan="5" align="center"><b>HoloViz Stack</b><br><sub>Panel &nbsp;·&nbsp; HoloViews &nbsp;·&nbsp; hvPlot &nbsp;·&nbsp; GeoViews &nbsp;·&nbsp; Param &nbsp;·&nbsp; Bokeh</sub></td>
   </tr>
   <tr>
     <td align="center"><b>GeoViews</b><br><sub>gv.Points<br>CartoDark Tiles<br>Mercator Projection</sub></td>
     <td align="center"><b>HoloViews</b><br><sub>link_selections<br>BoxWhisker · Histogram<br>hv.Dataset</sub></td>
     <td align="center"><b>hvPlot</b><br><sub>hvplot.line()<br>hvplot.barh()<br>hvplot.scatter()</sub></td>
-    <td align="center"><b>Datashader</b><br><sub>Point Rasterization<br>Density Heatmap<br>Server-side Render</sub></td>
+    <td align="center"><b>Bokeh</b><br><sub>Rendering Backend<br>Interactive Plots<br>Tooltips</sub></td>
     <td align="center"><b>Param</b><br><sub>DashboardState<br>param.Parameterized<br>param.watch · pn.bind</sub></td>
   </tr>
   <tr>
