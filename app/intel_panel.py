@@ -144,6 +144,7 @@ def build_currency_tab() -> pn.Column:
         try:
             codes = FX_REGION_GROUPS.get(region, [])
             fx = load_fx_live(codes).sort_values("change_pct")
+            fx["Change (%)"] = fx["change_pct"].map(lambda x: f"{x:+.3f}%")
             clim = max(abs(float(fx["change_pct"].min())),
                        abs(float(fx["change_pct"].max())), 0.01)
             h = max(260, len(codes) * 32)
@@ -152,7 +153,9 @@ def build_currency_tab() -> pn.Column:
                 c="change_pct", cmap="RdYlGn",
                 clim=(-clim, clim), colorbar=False,
                 xlim=(-clim, clim),
-                xlabel="Δ% (today)", ylabel="",
+                hover_cols=["Change (%)"],
+                xlabel="1-day % change vs USD",
+                ylabel="",
                 responsive=True, height=h, grid=True, fontscale=0.9,
             )
             return pn.pane.HoloViews(chart, sizing_mode="stretch_both", min_height=h)
@@ -171,6 +174,14 @@ def build_currency_tab() -> pn.Column:
                 sizing_mode="stretch_width",
             ),
             styles={"padding": "0 16px 12px"},
+        ),
+        pn.pane.HTML(
+            f'<div style="font-size:11px;color:{_MUTED};font-family:\'Courier New\',monospace;'
+            f'padding:0 16px 8px;">'
+            f'🟢 positive = USD strengthened (local currency weakened) &nbsp;·&nbsp; '
+            f'🔴 negative = USD weakened (local currency strengthened)'
+            f'</div>',
+            sizing_mode="stretch_width",
         ),
         pn.panel(live_pane, sizing_mode="stretch_both"),
         sizing_mode="stretch_both",

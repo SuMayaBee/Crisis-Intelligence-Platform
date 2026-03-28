@@ -325,6 +325,62 @@ def build_dashboard() -> pn.Column:
             sizing_mode="stretch_width",
         ),
         region_grid,
+        _divider(),
+
+        pn.Card(
+            pn.pane.HTML(
+                f"""
+                <table style="width:100%;border-collapse:collapse;
+                              font-family:'Courier New',monospace;font-size:11px;color:#94a3b8;">
+                  <tbody>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">GDELT</td>
+                        <td style="padding:4px 0;">Conflict &amp; news events</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">NASA FIRMS</td>
+                        <td style="padding:4px 0;">Satellite fire hotspots</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">OpenSky</td>
+                        <td style="padding:4px 0;">Live flight tracking</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">NOAA</td>
+                        <td style="padding:4px 0;">Weather alerts</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">AIS Stream</td>
+                        <td style="padding:4px 0;">Maritime tracking</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">USGS</td>
+                        <td style="padding:4px 0;">Seismic events</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">AlienVault OTX</td>
+                        <td style="padding:4px 0;">Cyber threats</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">Yahoo Finance</td>
+                        <td style="padding:4px 0;">Commodities &amp; stocks</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">ExchangeRate.host</td>
+                        <td style="padding:4px 0;">Live FX rates</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">Google News RSS</td>
+                        <td style="padding:4px 0;">Regional headlines</td></tr>
+                    <tr><td style="padding:4px 4px 4px 0;color:#e2e8f0;">Gemini</td>
+                        <td style="padding:4px 0;">AI Explorer LLM</td></tr>
+                  </tbody>
+                </table>
+                <div style="margin-top:8px;font-size:10px;color:#475569;font-family:'Courier New',monospace;">
+                  All free &amp; open — no paid subscriptions.
+                </div>
+                """,
+                sizing_mode="stretch_width",
+            ),
+            title="About Data",
+            collapsed=True,
+            sizing_mode="stretch_width",
+            styles={"background": _PANEL_BG},
+            header_color=_ACCENT,
+            stylesheets=[f"""
+                :host .card-header {{
+                    background: {_PANEL_BG};
+                    border-bottom: 1px solid {_BORDER};
+                    font-family: 'Courier New', monospace;
+                    font-size: 11px;
+                    font-weight: bold;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    padding: 6px 10px;
+                }}
+            """],
+        ),
         pn.Spacer(),
 
         sizing_mode="stretch_height",
